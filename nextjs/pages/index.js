@@ -4,13 +4,14 @@ import { Inter } from "next/font/google";
 import Grid from "@mui/material/Grid2";
 import { Box, Typography, Button, TextField } from "@mui/material"; // Use by LoginForm
 import useBearStore from "@/store/useBearStore";
+import Link from 'next/link';
 
 function Home() {
   return (
     <>
 
       <main>
-        <Box>This is index page</Box>
+        <Box><Link href="/register">Click here to register</Link></Box>
       </main>
     </>
   );

@@ -124,3 +124,53 @@ The database interaction function e.g. the query string can be found in [databas
 
 This project uses [Material UI (MUI)](https://mui.com/material-ui/getting-started/overview/) to enhance the user interface design and development. MUI is a popular React component library that provides pre-built, customizable UI components based on Google's Material Design guidelines.
 
+
+
+postgres code
+
+CREATE TABLE IF NOT EXISTS roles (
+    roles_id SERIAL PRIMARY KEY,
+    roles_name VARCHAR(50) UNIQUE NOT NULL,
+    permissions VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    roles_id INTEGER NOT NULL,
+    CONSTRAINT fk_roles FOREIGN KEY (roles_id) REFERENCES roles(roles_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS productCategory (
+    pro_category_id SERIAL PRIMARY KEY,
+    category_name VARCHAR(255) NOT NULL,
+    number_of_products INTEGER not null,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS inventory (
+    item_id SERIAL PRIMARY KEY,
+    item_name VARCHAR(50) NOT NULL,
+    quantity INTEGER NOT NULL,
+	description VARCHAR(255),
+	pro_category_id INTEGER not null,
+    CONSTRAINT fk_productCategory FOREIGN KEY (pro_category_id) REFERENCES productCategory(pro_category_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS rent (
+    rent_id SERIAL PRIMARY KEY,
+    rented_quantity INTEGER NOT NULL,
+	rent_date DATE not null,
+	return_date DATE not null,
+	user_id INTEGER not null,
+	item_id INTEGER not null,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_inventory FOREIGN KEY (item_id) REFERENCES inventory(item_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

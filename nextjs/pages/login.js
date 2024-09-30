@@ -128,7 +128,7 @@ method: 'POST',
                 variant="contained"
                 sx={{ backgroundColor: '#757575', marginTop: '40px', padding: '10px 0' }} type="submit"
             >
-                Login
+                <Link href="/home" underline="none" sx={{ fontWeight: 500 }}>Login</Link>
             </Button>
           </form>
           <Typography sx={{ marginTop: '10px', textAlign: 'left' }}>

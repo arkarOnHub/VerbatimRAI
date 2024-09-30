@@ -53,15 +53,15 @@ export default function Dashboard() {
           </ListItem>
           <ListItem button>
             <PeopleIcon sx={{ marginRight: '10px' }} />
-            <Link href="/home" passHref><ListItemText primary="Users" /></Link>
+            <Link href="/users" passHref><ListItemText primary="Users" /></Link>
           </ListItem>
           <ListItem button>
             <ShoppingCartIcon sx={{ marginRight: '10px' }} />
-            <ListItemText primary="Orders" />
+            <Link href="/orders" passHref><ListItemText primary="Orders" /></Link>
           </ListItem>
           <ListItem button>
             <InventoryIcon sx={{ marginRight: '10px' }} />
-            <ListItemText primary="Products" />
+            <Link href="/products" passHref><ListItemText primary="Products" /></Link>
           </ListItem>
           <ListItem button>
             <BarChartIcon sx={{ marginRight: '10px' }} />

@@ -68,3 +68,57 @@ async def update_user(user_id: int, username: str, password_hash: str, email: st
 async def delete_user(user_id: int):
     query = "DELETE FROM users WHERE user_id = :user_id RETURNING *"
     return await database.fetch_one(query=query, values={"user_id": user_id})
+
+
+# Function to select all products from the products table
+async def get_all_products_from_db():
+    query = """
+    SELECT p.product_id, p.product_name, p.product_quantity, p.image_url, p.product_description, p.pro_category_id, c.category_name
+    FROM products p
+    JOIN productCategory c ON p.pro_category_id = c.pro_category_id
+    """
+    return await database.fetch_all(query)
+
+
+# Function to select a user by user_id from the users table
+async def get_product(product_id: int):
+    query = "SELECT * FROM products WHERE product_id = :product_id"
+    return await database.fetch_one(query=query, values={"product_id": product_id})
+
+
+# Function to select all products from the products table
+async def get_all_categories_from_db():
+    query = """
+    SELECT * FROM productcategory
+    """
+    return await database.fetch_all(query)
+
+
+# database.py (or wherever your database functions are defined)
+
+
+async def get_products_by_category(category_name: str):
+    query = """
+    SELECT p.product_id, p.product_name, p.product_quantity, p.product_description, p.pro_category_id
+    FROM products p
+    JOIN productcategory c ON p.pro_category_id = c.pro_category_id
+    WHERE c.category_name = :category_name
+    """
+    async with database.transaction():
+        products = await database.fetch_all(
+            query=query, values={"category_name": category_name}
+        )
+    return products
+
+
+async def get_products_by_category_id(pro_category_id: int):
+    query = """
+    SELECT p.product_name, p.product_quantity, p.pro_category_id
+    FROM products p
+    WHERE p.pro_category_id = :pro_category_id
+    """
+    async with database.transaction():
+        products = await database.fetch_all(
+            query=query, values={"pro_category_id": pro_category_id}
+        )
+    return products

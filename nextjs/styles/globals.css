@@ -23,4 +23,5 @@ html, body {
   padding: 0;
   font-family: var(--font-family); /* Apply the font globally */
   background-color: rgb(255, 255, 255);
+  cursor: url('/custom-cursor.png'), auto;
 }

@@ -70,6 +70,7 @@ export default function Products() {
 const handleSubmit = async (e) => {
   e.preventDefault();
   setFormLoading(true);
+  setError(null); // Reset error before the request
   try {
     const response = await axios.post('/api/products/create', {
       product_name: formData.productName,
@@ -83,26 +84,29 @@ const handleSubmit = async (e) => {
     if (response.data) {
       // Add new product to the list
       setProducts([...products, response.data]);
+      // Reset form
+      setFormData({
+        productName: '',
+        quantity: '',
+        categoryId: '',
+        imageUrl: '',
+        description: '',
+      });
     } else {
       throw new Error("Product creation response is invalid");
     }
-
-    // Reset form
-    setFormData({
-      productName: '',
-      quantity: '',
-      categoryId: '',
-      imageUrl: '',
-      description: '',
-    });
   } catch (err) {
-    console.error('Error adding product:', err);
-    setError('Failed to add product');
+    console.error('Error adding product:', err.response ? err.response.data : err.message);
+    // Only set error if there's an actual error response
+    if (err.response && err.response.data) {
+      setError(err.response.data.detail || 'Failed to add product');
+    } else {
+      setError('Failed to add product');
+    }
   } finally {
     setFormLoading(false);
   }
 };
-
 
   // Handle opening the delete confirmation dialog
   const handleOpenDialog = (productId) => {
@@ -150,7 +154,7 @@ const handleSubmit = async (e) => {
       const response = await axios.put(`/api/products/${selectedProductId}`, {
         product_name: formData.productName,
         product_quantity: formData.quantity,
-        category_id: formData.categoryId,
+        pro_category_id: formData.categoryId,
         image_url: formData.imageUrl,
         product_description: formData.description,
       });

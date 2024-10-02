@@ -9,16 +9,24 @@ router = APIRouter()
 
 
 class Product(BaseModel):
+    product_id: int  # Ensure this is included
+    product_name: str
+    product_quantity: int
+    # pro_category_id: int
+    image_url: str
+    product_description: Optional[str]
+
+
+class ProductByID(BaseModel):
     product_name: str
     product_quantity: int
     pro_category_id: int
 
 
-# Define a model to represent the product
 class Category(BaseModel):
-    category_name: str
-    # number_of_products: int
     pro_category_id: int
+    category_name: str
+    # number_of_products: Optional[int]  # Uncomment if needed
 
 
 @router.get("/categories", response_model=List[Category])
@@ -59,7 +67,9 @@ async def fetch_products_by_category(category_name: str):
     return products
 
 
-@router.get("/products/categories/id/{pro_category_id}", response_model=List[Product])
+@router.get(
+    "/products/categories/id/{pro_category_id}", response_model=List[ProductByID]
+)
 async def fetch_products_by_category_id(pro_category_id: int):
     # Call the database function to fetch products by category ID
     products = await get_products_by_category_id(pro_category_id)

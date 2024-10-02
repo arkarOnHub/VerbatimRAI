@@ -110,7 +110,7 @@ async def get_all_products_from_db():
     query = """
     SELECT p.product_id, p.product_name, p.product_quantity, p.image_url, p.product_description, p.pro_category_id, c.category_name
     FROM products p
-    JOIN productCategory c ON p.pro_category_id = c.pro_category_id
+    JOIN productcategory c ON p.pro_category_id = c.pro_category_id
     """
     return await database.fetch_all(query)
 
@@ -131,7 +131,7 @@ async def insert_product(
     # Example implementation to insert the product into the database
     query = """INSERT INTO products (product_name, product_quantity, pro_category_id, image_url, product_description)
     VALUES (:product_name,  :product_quantity, :pro_category_id, :image_url, :product_description)
-    RETURNING product_id, product_name, product_quantity, pro_category_id, created_at"""
+    RETURNING product_id, product_name, product_quantity, pro_category_id, image_url, product_description,created_at"""
     values = {
         "product_name": product_name,
         "product_quantity": product_quantity,
@@ -161,7 +161,7 @@ async def get_all_categories_from_db():
 
 async def get_products_by_category(category_name: str):
     query = """
-    SELECT p.product_id, p.product_name, p.product_quantity, p.product_description, p.pro_category_id
+    SELECT p.product_id, p.product_name, p.product_quantity, p.image_url, p.product_description, p.pro_category_id, c.category_name
     FROM products p
     JOIN productcategory c ON p.pro_category_id = c.pro_category_id
     WHERE c.category_name = :category_name

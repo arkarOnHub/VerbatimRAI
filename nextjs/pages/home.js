@@ -39,6 +39,15 @@ const HomePage = () => {
   const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Mapping of category names to pro_category_id
+  const categoryIdMapping = {
+    'Designer Handbags': 1,
+    'Luxury Watches': 2,
+    'High-End Jewelries': 3,
+    'Premium Footwear': 4,
+    'Sunglasses & Eyewear': 5,
+  };
+
   // Fetch all products when the page loads
   useEffect(() => {
     const fetchProducts = async () => {
@@ -55,14 +64,6 @@ const HomePage = () => {
   // Fetch products by category when a category is opened
   useEffect(() => {
     const fetchCategoryProducts = async () => {
-      const categoryIdMapping = {
-        'Designer Handbags': 1,
-        'Luxury Watches': 2,
-        'High-End Jewelries': 3,
-        'Premium Footwear': 4,
-        'Sunglasses & Eyewear': 5,
-      };
-
       for (const category of Object.keys(openCategories)) {
         if (openCategories[category] && !productsByCategory[category]) {
           try {
@@ -84,13 +85,13 @@ const HomePage = () => {
   }, [openCategories]);
 
   // Handle checkbox changes for category selection
-  const handleCheckboxChange = (category) => {
+  const handleCheckboxChange = (categoryId) => {
     setSelectedCategories((prev) => {
       const newSelectedCategories = new Set(prev);
-      if (newSelectedCategories.has(category)) {
-        newSelectedCategories.delete(category);
+      if (newSelectedCategories.has(categoryId)) {
+        newSelectedCategories.delete(categoryId);
       } else {
-        newSelectedCategories.add(category);
+        newSelectedCategories.add(categoryId);
       }
       return newSelectedCategories;
     });
@@ -112,7 +113,7 @@ const HomePage = () => {
   // Filter products based on selected categories and search term
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
-      selectedCategories.size === 0 || selectedCategories.has(product.category_name);
+      selectedCategories.size === 0 || selectedCategories.has(product.pro_category_id); // Check against pro_category_id
     const matchesSearchTerm =
       product.product_name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearchTerm;
@@ -150,8 +151,8 @@ const HomePage = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={selectedCategories.has(category)}
-                        onChange={() => handleCheckboxChange(category)}
+                        checked={selectedCategories.has(categoryIdMapping[category])} // Check against pro_category_id
+                        onChange={() => handleCheckboxChange(categoryIdMapping[category])} // Use category ID
                       />
                     }
                     label={category}

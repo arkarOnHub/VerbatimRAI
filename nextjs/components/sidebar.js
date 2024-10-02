@@ -27,7 +27,7 @@ export default function Sidebar() {
       <List>
         <ListItem button>
           <DashboardIcon sx={{ marginRight: '10px' }} />
-          <ListItemText primary="Dashboard" />
+          <Link href="/dashboard" passHref><ListItemText primary="Dashboard" /></Link>
         </ListItem>
         <ListItem button>
           <PeopleIcon sx={{ marginRight: '10px' }} />

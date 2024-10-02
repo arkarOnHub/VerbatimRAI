@@ -21,9 +21,17 @@ class Category(BaseModel):
     pro_category_id: int
 
 
+@router.get("/categories", response_model=List[Category])
+async def get_all_categories():
+    products = await get_all_categories_from_db()
+    if products is None:
+        raise HTTPException(status_code=404, detail="Products not found")
+    return products
+
+
 # Create a FastAPI route to fetch products from the database
-@router.get("/productcategory", response_model=List[Category])
-async def get_all_category(category_name: str):
+@router.get("/categories/products", response_model=List[Category])
+async def get_all_products_by_category(category_name: str):
     products = await get_products_by_category(category_name)
     if products is None:
         raise HTTPException(status_code=404, detail="Products not found")
@@ -42,7 +50,7 @@ async def get_all_category(category_name: str):
 # category.py
 
 
-@router.get("/products/category/{category_name}", response_model=List[Product])
+@router.get("/products/categories/{category_name}", response_model=List[Product])
 async def fetch_products_by_category(category_name: str):
     # Call the correct database function
     products = await get_products_by_category(category_name)
@@ -51,7 +59,7 @@ async def fetch_products_by_category(category_name: str):
     return products
 
 
-@router.get("/products/category/id/{pro_category_id}", response_model=List[Product])
+@router.get("/products/categories/id/{pro_category_id}", response_model=List[Product])
 async def fetch_products_by_category_id(pro_category_id: int):
     # Call the database function to fetch products by category ID
     products = await get_products_by_category_id(pro_category_id)

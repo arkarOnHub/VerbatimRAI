@@ -1,4 +1,5 @@
 from databases import Database
+from typing import Optional, List
 
 POSTGRES_USER = "temp"
 POSTGRES_PASSWORD = "temp"
@@ -32,6 +33,12 @@ async def insert_user(username: str, password_hash: str, email: str):
 
 
 # Function to select a user by user_id from the users table
+async def get_all_users_from_db():
+    query = "SELECT * FROM users"
+    return await database.fetch_all(query)
+
+
+# Function to select a user by user_id from the users table
 async def get_user(user_id: int):
     query = "SELECT * FROM users WHERE user_id = :user_id"
     return await database.fetch_one(query=query, values={"user_id": user_id})
@@ -47,8 +54,36 @@ async def get_user_by_email(email: str, password_hash: str):
     )
 
 
-# Function to update a user in the users table
-async def update_user(user_id: int, username: str, password_hash: str, email: str):
+async def get_user_by_username(username: str):
+    query = "SELECT * FROM users WHERE username = :username"
+    return await database.fetch_one(query=query, values={"username": username})
+
+
+async def get_user_by_email_2(email: str):
+    query = "SELECT * FROM users WHERE email = :email"
+    return await database.fetch_one(query=query, values={"email": email})
+
+
+async def update_user(
+    user_id: int,
+    username: Optional[str],
+    password_hash: Optional[str],
+    email: Optional[str],
+):
+    existing_user = await get_user(user_id)
+
+    if username and username != existing_user.username:
+        # Check if new username is taken
+        user_with_same_username = await get_user_by_username(username)
+        if user_with_same_username:
+            raise HTTPException(status_code=400, detail="Username already taken")
+
+    if email and email != existing_user.email:
+        # Check if new email is taken
+        user_with_same_email = await get_user_by_email_2(email)
+        if user_with_same_email:
+            raise HTTPException(status_code=400, detail="Email already in use")
+
     query = """
     UPDATE users 
     SET username = :username, password_hash = :password_hash, email = :email
@@ -57,9 +92,9 @@ async def update_user(user_id: int, username: str, password_hash: str, email: st
     """
     values = {
         "user_id": user_id,
-        "username": username,
-        "password_hash": password_hash,
-        "email": email,
+        "username": username or existing_user.username,
+        "password_hash": password_hash or existing_user.password_hash,
+        "email": email or existing_user.email,
     }
     return await database.fetch_one(query=query, values=values)
 
@@ -83,6 +118,33 @@ async def get_all_products_from_db():
 # Function to select a user by user_id from the users table
 async def get_product(product_id: int):
     query = "SELECT * FROM products WHERE product_id = :product_id"
+    return await database.fetch_one(query=query, values={"product_id": product_id})
+
+
+async def insert_product(
+    product_name: str,
+    product_quantity: int,
+    pro_category_id: int,
+    image_url: str,
+    product_description: str,
+):
+    # Example implementation to insert the product into the database
+    query = """INSERT INTO products (product_name, product_quantity, pro_category_id, image_url, product_description)
+    VALUES (:product_name,  :product_quantity, :pro_category_id, :image_url, :product_description)
+    RETURNING product_id, product_name, product_quantity, pro_category_id, created_at"""
+    values = {
+        "product_name": product_name,
+        "product_quantity": product_quantity,
+        "pro_category_id": pro_category_id,
+        "image_url": image_url,
+        "product_description": product_description,
+    }
+    return await database.fetch_one(query=query, values=values)
+
+
+# Function to delete a user from the users table
+async def delete_product(product_id: int):
+    query = "DELETE FROM products WHERE product_id = :product_id RETURNING *"
     return await database.fetch_one(query=query, values={"product_id": product_id})
 
 

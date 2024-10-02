@@ -67,7 +67,7 @@ const HomePage = () => {
         if (openCategories[category] && !productsByCategory[category]) {
           try {
             const categoryId = categoryIdMapping[category];
-            const response = await axios.get(`/api/products/category/id/${categoryId}`);
+            const response = await axios.get(`/api/products/categories/id/${categoryId}`);
 
             setProductsByCategory((prev) => ({
               ...prev,

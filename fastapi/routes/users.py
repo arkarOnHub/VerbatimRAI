@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 from datetime import datetime
 from database import *
 from routes.password_cypher import encrypt, decrypt
@@ -25,7 +25,7 @@ class UserCreate(BaseModel):
 # Pydantic model for user update
 class UserUpdate(BaseModel):
     username: Optional[str]
-    password_hash: Optional[str]
+    password_hash: Optional[EmailStr]
     email: Optional[str]
 
 
@@ -36,6 +36,14 @@ class User(BaseModel):
     password_hash: str
     email: str
     created_at: datetime
+
+
+@router.get("/users", response_model=List[User])
+async def get_users():
+    products = await get_all_users_from_db()
+    if products is None:
+        raise HTTPException(status_code=404, detail="Products not found")
+    return products
 
 
 # Endpoint to create a new user
@@ -60,6 +68,7 @@ async def read_user(user_id: int):
 # Endpoint to update a user
 @router.put("/users/{user_id}", response_model=User)
 async def update_user_endpoint(user_id: int, user: UserUpdate):
+    print(f"Updating user {user_id} with data: {user.dict()}")
     result = await update_user(user_id, user.username, user.password_hash, user.email)
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")

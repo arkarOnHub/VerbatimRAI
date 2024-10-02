@@ -11,9 +11,10 @@ router = APIRouter()
 # Pydantic model for user creation
 class ProductCreate(BaseModel):
     product_name: str
-    product_quantity: Optional[int] = 0
-    product_description: Optional[str]
-    pro_category_id: Optional[int]
+    product_quantity: int
+    pro_category_id: int  # Ensure this is included
+    image_url: str
+    product_description: Optional[str] = None
 
 
 # Pydantic model for Product update
@@ -51,3 +52,29 @@ async def read_product(product_id: int):
     if result is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return result
+
+
+# Endpoint to create a new product
+@router.post("/products/create", response_model=Product)
+async def create_product(product: ProductCreate):
+    result = await insert_product(
+        product.product_name,
+        product.product_quantity,
+        product.pro_category_id,  # Include category ID
+        product.image_url,  # Include image URL
+        product.product_description,
+    )
+    if result is None:
+        raise HTTPException(
+            status_code=400, detail="Error creating product"
+        )  # Change error message
+    return result
+
+
+# Endpoint to delete a user
+@router.delete("/products/{product_id}")
+async def delete_product_endpoint(product_id: int):
+    result = await delete_product(product_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"detail": "User deleted"}

@@ -142,6 +142,35 @@ async def insert_product(
     return await database.fetch_one(query=query, values=values)
 
 
+async def update_product(
+    product_name,
+    product_quantity,
+    pro_category_id,
+    image_url,
+    product_description,
+    product_id,
+):
+    query = """
+    UPDATE products
+    SET product_name = :product_name,
+        product_quantity = :product_quantity,
+        pro_category_id = :pro_category_id,
+        image_url = :image_url,
+        product_description = :product_description
+    WHERE product_id = :product_id
+    RETURNING *;
+    """
+    values = {
+        "product_id": product_id,
+        "product_name": product_name,
+        "product_quantity": product_quantity,
+        "pro_category_id": pro_category_id,
+        "image_url": image_url,
+        "product_description": product_description,
+    }
+    return await database.fetch_one(query, values)
+
+
 # Function to delete a user from the users table
 async def delete_product(product_id: int):
     query = "DELETE FROM products WHERE product_id = :product_id RETURNING *"

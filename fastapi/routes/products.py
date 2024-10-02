@@ -18,12 +18,13 @@ class ProductCreate(BaseModel):
     # category_name: str
 
 
-# Pydantic model for Product update
+# Define the ProductUpdate model
 class ProductUpdate(BaseModel):
-    product_name: Optional[str]
+    product_name: str
     product_quantity: Optional[int]
-    product_description: Optional[str]
     pro_category_id: Optional[int]
+    image_url: Optional[str]
+    product_description: Optional[str]
 
 
 # Define a model to represent the product
@@ -34,7 +35,7 @@ class Product(BaseModel):
     image_url: str
     product_description: Optional[str]
     pro_category_id: int
-    # category_name: str
+    category_name: str
 
 
 # Create a FastAPI route to fetch products from the database
@@ -56,19 +57,21 @@ async def read_product(product_id: int):
 
 
 # Endpoint to update a user
-@router.put("/products/{product_id}", response_model=Product)
+@router.put("/products/{product_id}", response_model=ProductUpdate)
 async def update_product_endpoint(product_id: int, product: ProductUpdate):
-    print(f"Updating product {product_id} with data: {product.dict()}")
+    # Call the update_product function with the required parameters
     result = await update_product(
-        product_id,
         product.product_name,
         product.product_quantity,
+        product.pro_category_id,
         product.image_url,
         product.product_description,
-        product.pro_category_id,
+        product_id,
     )
+    # Check if the update was successful
     if result is None:
-        raise HTTPException(status_code=404, detail="product not found")
+        raise HTTPException(status_code=404, detail="Product not found")
+
     return result
 
 

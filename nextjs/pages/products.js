@@ -139,11 +139,11 @@ const handleSubmit = async (e) => {
     setFormData({
       productName: product.product_name,
       quantity: product.product_quantity,
-      categoryId: product.category_id,
+      categoryId: product.pro_category_id,
       imageUrl: product.image_url,
       description: product.product_description,
     });
-    setSelectedProductId(product.id);
+    setSelectedProductId(product.product_id);
     setIsUpdating(true); // Set to updating mode
     setOpenDialog(true);
   };
@@ -158,7 +158,6 @@ const handleSubmit = async (e) => {
         image_url: formData.imageUrl,
         product_description: formData.description,
       });
-
       setProducts(products.map(product =>
         product.id === selectedProductId ? response.data : product
       ));

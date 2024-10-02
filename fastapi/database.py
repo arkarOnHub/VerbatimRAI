@@ -65,36 +65,22 @@ async def get_user_by_email_2(email: str):
 
 
 async def update_user(
-    user_id: int,
-    username: Optional[str],
-    password_hash: Optional[str],
-    email: Optional[str],
+    username,
+    email,
+    password_hash,
+    user_id,
 ):
-    existing_user = await get_user(user_id)
-
-    if username and username != existing_user.username:
-        # Check if new username is taken
-        user_with_same_username = await get_user_by_username(username)
-        if user_with_same_username:
-            raise HTTPException(status_code=400, detail="Username already taken")
-
-    if email and email != existing_user.email:
-        # Check if new email is taken
-        user_with_same_email = await get_user_by_email_2(email)
-        if user_with_same_email:
-            raise HTTPException(status_code=400, detail="Email already in use")
-
     query = """
     UPDATE users 
     SET username = :username, password_hash = :password_hash, email = :email
     WHERE user_id = :user_id
-    RETURNING user_id, username, password_hash, email, created_at
+    RETURNING username, password_hash, email, user_id
     """
     values = {
         "user_id": user_id,
-        "username": username or existing_user.username,
-        "password_hash": password_hash or existing_user.password_hash,
-        "email": email or existing_user.email,
+        "username": username,
+        "password_hash": password_hash,
+        "email": email,
     }
     return await database.fetch_one(query=query, values=values)
 

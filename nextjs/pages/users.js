@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
-  Box, Typography, CircularProgress, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle
+  Box,
+  Typography,
+  CircularProgress,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import Sidebar from '../components/sidebar';
 
@@ -11,8 +27,10 @@ export default function Users() {
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [formLoading, setFormLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false); // Update dialog
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // Delete dialog
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false); // To track if in update mode
 
   // Fetch users from the backend API using Axios
   useEffect(() => {
@@ -36,37 +54,51 @@ export default function Users() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit to add a new user
+  // Handle form submit to add a new user or update an existing one
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
     try {
-      // Send data to your specific create user endpoint
-      const response = await axios.post('/api/users/create', {
-        username: formData.username,
-        email: formData.email,
-        password_hash: formData.password,  // Password is hashed server-side
-      });
-      
-      setUsers([...users, response.data]);  // Add new user to the list
-      setFormData({ username: '', email: '', password: '' });  // Reset form
+      if (isUpdating) {
+        const response = await axios.put(`/api/users/${selectedUserId}`, {
+          username: formData.username,
+          email: formData.email,
+          password_hash: formData.password, // Password is hashed server-side
+        });
+        
+        // Update the user in the list
+        setUsers(users.map(user => (user.user_id === selectedUserId ? response.data : user)));
+      } else {
+        const response = await axios.post('/api/users/create', {
+          username: formData.username,
+          email: formData.email,
+          password_hash: formData.password, // Password is hashed server-side
+        });
+        
+        setUsers([...users, response.data]); // Add new user to the list
+      }
+
+      // Reset form and states
+      setFormData({ username: '', email: '', password: '' });
+      setIsUpdating(false); // Reset update mode
+      setOpenUpdateDialog(false); // Close the update dialog
       setFormLoading(false);
     } catch (err) {
-      console.error('Error adding user:', err);
-      setError('Failed to add user');
+      console.error('Error adding/updating user:', err);
+      setError('Failed to add/update user');
       setFormLoading(false);
     }
   };
 
   // Handle opening the delete confirmation dialog
-  const handleOpenDialog = (userId) => {
+  const handleOpenDeleteDialog = (userId) => {
     setSelectedUserId(userId);
-    setOpenDialog(true);
+    setOpenDeleteDialog(true);
   };
 
   // Handle closing the delete confirmation dialog
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
     setSelectedUserId(null);
   };
 
@@ -75,11 +107,29 @@ export default function Users() {
     try {
       await axios.delete(`/api/users/${selectedUserId}`);
       setUsers(users.filter(user => user.user_id !== selectedUserId));
-      handleCloseDialog();
+      handleCloseDeleteDialog();
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user');
     }
+  };
+
+  // Handle opening the update dialog and pre-filling the form
+  const handleOpenUpdateDialog = (user) => {
+    setFormData({
+      username: user.username,
+      email: user.email,
+      password: user.password_hash, // Reset password field (optional)
+    });
+    setSelectedUserId(user.user_id);
+    setIsUpdating(true); // Set to updating mode
+    setOpenUpdateDialog(true);
+  };
+
+  const handleCloseUpdateDialog = () => {
+    setOpenUpdateDialog(false);
+    setIsUpdating(false); // Reset updating state
+    setFormData({ username: '', email: '', password: '' }); // Reset form data
   };
 
   return (
@@ -91,7 +141,7 @@ export default function Users() {
       <Box sx={{ flexGrow: 1, padding: '20px', marginLeft: '230px' }}>
         <Typography variant="h4" sx={{ marginBottom: '20px' }}>Users</Typography>
 
-        {/* Form to Add User */}
+        {/* Form to Add or Update User */}
         <Box component="form" onSubmit={handleSubmit} sx={{ marginBottom: '20px' }}>
           <Box sx={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
             <TextField
@@ -122,7 +172,7 @@ export default function Users() {
             />
           </Box>
           <Button type="submit" variant="contained" color="primary" disabled={formLoading}>
-            {formLoading ? 'Adding...' : 'Add User'}
+            {formLoading ? 'Saving...' : isUpdating ? 'Update User' : 'Add User'}
           </Button>
         </Box>
 
@@ -151,8 +201,16 @@ export default function Users() {
                     <TableCell>
                       <Button
                         variant="contained"
+                        color="primary"
+                        onClick={() => handleOpenUpdateDialog(user)}
+                        sx={{ marginRight: '10px' }}
+                      >
+                        Update
+                      </Button>
+                      <Button
+                        variant="contained"
                         color="secondary"
-                        onClick={() => handleOpenDialog(user.user_id)}
+                        onClick={() => handleOpenDeleteDialog(user.user_id)}
                       >
                         Delete
                       </Button>
@@ -164,11 +222,51 @@ export default function Users() {
           </TableContainer>
         )}
 
+        {/* Update User Dialog */}
+        <Dialog open={openUpdateDialog} onClose={handleCloseUpdateDialog}>
+          <DialogTitle>{isUpdating ? 'Update User' : 'Add User'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {isUpdating ? 'Update the user details.' : 'Fill in the details to add a new user.'}
+            </DialogContentText>
+            <TextField
+              label="Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              fullWidth
+              sx={{ marginBottom: '10px' }}
+            />
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              fullWidth
+              sx={{ marginBottom: '10px' }}
+            />
+            <TextField
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              fullWidth
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseUpdateDialog} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} color="primary">
+              {isUpdating ? 'Update' : 'Add'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-        >
+        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Delete User</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -176,7 +274,7 @@ export default function Users() {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">
+            <Button onClick={handleCloseDeleteDialog} color="primary">
               Cancel
             </Button>
             <Button onClick={handleDelete} color="secondary" autoFocus>

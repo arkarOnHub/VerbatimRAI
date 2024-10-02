@@ -24,9 +24,9 @@ class UserCreate(BaseModel):
 
 # Pydantic model for user update
 class UserUpdate(BaseModel):
-    username: Optional[str]
-    password_hash: Optional[EmailStr]
+    username: str
     email: Optional[str]
+    password_hash: Optional[str]
 
 
 # Pydantic model for user response
@@ -66,10 +66,9 @@ async def read_user(user_id: int):
 
 
 # Endpoint to update a user
-@router.put("/users/{user_id}", response_model=User)
+@router.put("/users/{user_id}", response_model=UserUpdate)
 async def update_user_endpoint(user_id: int, user: UserUpdate):
-    print(f"Updating user {user_id} with data: {user.dict()}")
-    result = await update_user(user_id, user.username, user.password_hash, user.email)
+    result = await update_user(user.username, user.email, user.password_hash, user_id)
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
     return result

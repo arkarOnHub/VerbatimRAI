@@ -254,7 +254,7 @@ const handleSubmit = async (e) => {
               </TableHead>
               <TableBody>
                 {products.map((product) => (
-                  <TableRow key={product.id}>
+                  <TableRow key={product.product_id}>
                     <TableCell>{product.product_id}</TableCell>
                     <TableCell>{product.product_name}</TableCell>
                     <TableCell>{product.product_quantity}</TableCell>

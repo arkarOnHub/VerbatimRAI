@@ -19,6 +19,8 @@ import {
   InputAdornment,
   Select,
   MenuItem,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -38,8 +40,13 @@ const HomePage = () => {
   const [productsByCategory, setProductsByCategory] = useState({});
   const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  // Mapping of category names to pro_category_id
+  // Mock user ID, replace with your actual user ID logic
+  const userId = 10; // Replace with the actual user ID from your authentication
+
   const categoryIdMapping = {
     'Designer Handbags': 1,
     'Luxury Watches': 2,
@@ -69,7 +76,6 @@ const HomePage = () => {
           try {
             const categoryId = categoryIdMapping[category];
             const response = await axios.get(`/api/products/categories/id/${categoryId}`);
-
             setProductsByCategory((prev) => ({
               ...prev,
               [category]: response.data,
@@ -80,7 +86,6 @@ const HomePage = () => {
         }
       }
     };
-
     fetchCategoryProducts();
   }, [openCategories]);
 
@@ -118,6 +123,44 @@ const HomePage = () => {
       product.product_name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearchTerm;
   });
+
+  // Function to add a product to the cart
+  const handleAddToCart = async (productId) => {
+    try {
+      const response = await axios.post('/api/rent/create', {
+        user_id: userId,  // Replace with the actual user ID
+        product_id: productId,
+        rental_date: new Date().toISOString(), // You can set this to the current date or a specific date
+      });
+      console.log('Product added to cart:', response.data);
+  
+      // Update the product quantity in the local state
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.product_id === productId
+            ? { ...product, product_quantity: product.product_quantity - 1 } // Decrement the quantity by 1
+            : product
+        )
+      );
+  
+      setSnackbarMessage('Product added to cart successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      setSnackbarMessage('Failed to add product to cart.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  // Close Snackbar function
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   return (
     <Grid container>
@@ -201,11 +244,15 @@ const HomePage = () => {
                     {product.product_name}
                   </Typography>
                   <Typography variant="body2" align="center" sx={{ color: '#888' }}>
-                    ${product.product_quantity} Per Day
+                    Available: {product.product_quantity}
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <IconButton aria-label="add to cart" sx={{ margin: 'auto' }}>
+                  <IconButton
+                    aria-label="add to cart"
+                    sx={{ margin: 'auto' }}
+                    onClick={() => handleAddToCart(product.product_id)} // Call the add to cart function
+                  >
                     <AddIcon />
                   </IconButton>
                 </CardActions>
@@ -214,6 +261,13 @@ const HomePage = () => {
           ))}
         </Grid>
       </Grid>
+
+      {/* Snackbar for success/error messages */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 };

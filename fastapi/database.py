@@ -1,5 +1,6 @@
 from databases import Database
 from typing import Optional, List
+from datetime import datetime, timedelta
 
 POSTGRES_USER = "temp"
 POSTGRES_PASSWORD = "temp"
@@ -199,3 +200,81 @@ async def get_products_by_category_id(pro_category_id: int):
             query=query, values={"pro_category_id": pro_category_id}
         )
     return products
+
+
+# Insert a new rent record
+async def insert_rent(
+    user_id: int,
+    product_id: int,
+):
+    query = """
+    INSERT INTO rent (user_id, product_id)
+    VALUES (:user_id, :product_id)
+    RETURNING rent_id, user_id, product_id, rental_date, return_date
+    """
+    async with database.transaction():
+        rent = await database.fetch_one(
+            query=query,
+            values={
+                "user_id": user_id,
+                "product_id": product_id,
+            },
+        )
+    return rent
+
+
+# Fetch the current product quantity
+async def get_product_quantity(product_id: int):
+    query = """SELECT product_quantity FROM products WHERE product_id = :product_id"""
+    async with database.transaction():
+        products = await database.fetch_one(
+            query=query, values={"product_id": product_id}
+        )
+    return products["product_quantity"]
+
+
+# Decrement the product quantity by 1
+async def decrement_product_quantity(product_id: int):
+    query = """
+    UPDATE products
+    SET product_quantity = product_quantity - 1
+    WHERE product_id = :product_id AND product_quantity > 0
+    RETURNING product_quantity
+    """
+    async with database.transaction():
+        updated_product = await database.fetch_all(
+            query=query, values={"product_id": product_id}
+        )
+    return updated_product
+
+
+async def get_current_rentals_by_id(user_id: int):
+    query = """
+    SELECT r.rent_id, r.user_id, r.product_id, p.product_name, pc.category_name
+    FROM rent r
+    JOIN products p ON r.product_id = p.product_id
+    JOIN productcategory pc ON p.pro_category_id = pc.pro_category_id
+    WHERE r.user_id = :user_id
+    """
+    async with database.transaction():
+        current_rent = await database.fetch_all(
+            query=query, values={"user_id": user_id}
+        )
+    return current_rent
+
+
+# Function to delete rent record from the rent table
+async def delete_rent(rent_id: int):
+    query = "DELETE FROM rent WHERE rent_id = :rent_id RETURNING *"
+    return await database.fetch_one(query=query, values={"rent_id": rent_id})
+
+
+# Function to increment the product quantity
+async def increment_product_quantity(product_id: int):
+    query = """
+    UPDATE products
+    SET product_quantity = product_quantity + 1
+    WHERE product_id = :product_id
+    RETURNING product_quantity
+    """
+    return await database.fetch_one(query=query, values={"product_id": product_id})

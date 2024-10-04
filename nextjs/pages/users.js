@@ -68,6 +68,11 @@ export default function Users() {
         
         // Update the user in the list
         setUsers(users.map(user => (user.user_id === selectedUserId ? response.data : user)));
+  
+        // Optionally, re-fetch users to ensure the data is up-to-date
+        const updatedResponse = await axios.get('/api/users');
+        setUsers(updatedResponse.data);
+        
       } else {
         const response = await axios.post('/api/users/create', {
           username: formData.username,
@@ -77,7 +82,7 @@ export default function Users() {
         
         setUsers([...users, response.data]); // Add new user to the list
       }
-
+  
       // Reset form and states
       setFormData({ username: '', email: '', password: '' });
       setIsUpdating(false); // Reset update mode
@@ -89,6 +94,7 @@ export default function Users() {
       setFormLoading(false);
     }
   };
+  
 
   // Handle opening the delete confirmation dialog
   const handleOpenDeleteDialog = (userId) => {

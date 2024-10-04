@@ -107,22 +107,14 @@ method: 'POST',
           <Typography variant="h4" gutterBottom>Create Account</Typography>
           <form onSubmit={handleRegisterSubmit}>
             <Grid container sx={{ height: '80px' }}>
-            <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 10px 0 0' }}>
+            <Grid item xs={12} md={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 10px 0 0' }}>
                 <TextField
                 fullWidth
-                label="First Name"
+                label="Username"
                 margin="normal"
                 variant="outlined"
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
-                />
-            </Grid>
-            <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0 0 10px' }}>
-                <TextField
-                fullWidth
-                label="Last Name"
-                margin="normal"
-                variant="outlined"
                 />
             </Grid>
             </Grid>
@@ -157,7 +149,7 @@ method: 'POST',
                 variant="contained"
                 sx={{ backgroundColor: '#757575', marginTop: '40px', padding: '10px 0' }} type="submit"
             >
-                Create Account
+                <Link href="/home" underline="none" sx={{ fontWeight: 500 }}>Create Account</Link>
             </Button>
           </form>
           <Typography sx={{ marginTop: '10px', textAlign: 'left' }}>

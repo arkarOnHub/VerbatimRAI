@@ -76,7 +76,7 @@ async def update_product_endpoint(product_id: int, product: ProductUpdate):
 
 
 # Endpoint to create a new product
-@router.post("/products/create", response_model=Product)
+@router.post("/products/create", response_model=ProductCreate)
 async def create_product(product: ProductCreate):
     result = await insert_product(
         product.product_name,

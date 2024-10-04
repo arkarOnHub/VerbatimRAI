@@ -82,8 +82,14 @@ const handleSubmit = async (e) => {
 
     // Check if the response data has the expected structure
     if (response.data) {
+      const newProduct = {
+        ...response.data,
+        category_name: categories.find(cat => cat.pro_category_id === response.data.pro_category_id)?.category_name,
+      };
+      
       // Add new product to the list
-      setProducts([...products, response.data]);
+      setProducts([...products, newProduct]);
+
       // Reset form
       setFormData({
         productName: '',
@@ -107,6 +113,7 @@ const handleSubmit = async (e) => {
     setFormLoading(false);
   }
 };
+
 
   // Handle opening the delete confirmation dialog
   const handleOpenDialog = (productId) => {
@@ -148,25 +155,44 @@ const handleSubmit = async (e) => {
     setOpenDialog(true);
   };
 
-  // Handle updating a product
-  const handleUpdate = async () => {
-    try {
-      const response = await axios.put(`/api/products/${selectedProductId}`, {
-        product_name: formData.productName,
-        product_quantity: formData.quantity,
-        pro_category_id: formData.categoryId,
-        image_url: formData.imageUrl,
-        product_description: formData.description,
-      });
-      setProducts(products.map(product =>
-        product.id === selectedProductId ? response.data : product
-      ));
-      handleCloseDialog();
-    } catch (err) {
-      console.error('Error updating product:', err.response ? err.response.data : err.message);
-      setError('Failed to update product');
+// Handle updating a product
+const handleUpdate = async () => {
+  try {
+    const response = await axios.put(`/api/products/${selectedProductId}`, {
+      product_name: formData.productName,
+      product_quantity: parseInt(formData.quantity, 10),
+      pro_category_id: formData.categoryId,
+      image_url: formData.imageUrl,
+      product_description: formData.description,
+    });
+
+    // Assuming your backend returns the updated product
+    const updatedProduct = {
+      ...response.data,
+      category_name: categories.find(cat => cat.pro_category_id === formData.categoryId)?.category_name,
+    };
+
+    // Check if the product_id is included in the response
+    if (response.data.product_id) {
+      updatedProduct.product_id = response.data.product_id;
+    } else {
+      updatedProduct.product_id = selectedProductId; // Fallback to the selected product ID
     }
-  };
+
+    // Update the product in the state
+    setProducts(products.map(product =>
+      product.product_id === selectedProductId ? updatedProduct : product
+    ));
+    
+    handleCloseDialog();
+  } catch (err) {
+    console.error('Error updating product:', err.response ? err.response.data : err.message);
+    setError('Failed to update product');
+  }
+};
+
+
+
 
   return (
     <Box sx={{ display: 'flex' }}>

@@ -174,3 +174,90 @@ CREATE TABLE IF NOT EXISTS rent (
     CONSTRAINT fk_inventory FOREIGN KEY (item_id) REFERENCES inventory(item_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+CREATE TABLE IF NOT EXISTS roles (
+    roles_id SERIAL PRIMARY KEY,
+    roles_name VARCHAR(50) UNIQUE NOT NULL,
+    permissions VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    roles_id INTEGER NOT null set default 0,
+    CONSTRAINT fk_roles FOREIGN KEY (roles_id) REFERENCES roles(roles_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE IF NOT EXISTS productCategory (
+    pro_category_id SERIAL PRIMARY KEY,
+    category_name VARCHAR(255) NOT NULL,
+    number_of_products INTEGER not null,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    product_id SERIAL PRIMARY KEY,
+    product_name VARCHAR(50) NOT NULL,
+    product_quantity INTEGER NOT NULL,
+    image_url VARCHAR(255),
+	product_description VARCHAR(255),
+	pro_category_id INTEGER not null,
+    CONSTRAINT fk_productCategory FOREIGN KEY (pro_category_id) REFERENCES productCategory(pro_category_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE IF NOT EXISTS rent (
+    rent_id SERIAL PRIMARY KEY,
+    rented_quantity INTEGER NOT NULL,
+	rent_date DATE not null,
+	return_date DATE not null,
+	user_id INTEGER not null,
+	product_id INTEGER not null,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_products FOREIGN KEY (product_id) REFERENCES products(product_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS cart (
+    cart_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT null,
+    product_id INTEGER not null,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_userCart FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_productCart FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+INSERT INTO products (product_name, product_quantity, product_price, image_url, product_description, created_at) VALUES
+('Cartier Ring', 12, 200, 'https://i.imgur.com/APs6jTd.png', 'P1', NOW()),
+('LV Monogram Bag', 12, 200, 'https://i.imgur.com/mbEJ8LG.png', 'P2', NOW()),
+('Rolex Watch', 12, 200, 'https://i.imgur.com/NDhQep7.png', 'P3', NOW()),
+('Hermes Birkin', 12, 200, 'https://i.imgur.com/fughd0P.png', 'P4', NOW());
+
+
+drop table products
+
+ALTER TABLE products
+ADD COLUMN price INTEGER not NULL;
+
+
+ALTER TABLE users
+ALTER COLUMN roles_id SET DEFAULT 0;
+
+ALTER TABLE inventory RENAME TO products;
+
+ALTER table inventory RENAME COLUMN item_quantity TO product_quantity;
+
+ALTER TABLE products
+ADD COLUMN image_url VARCHAR(255);
+
+
+DELETE FROM productcategory;

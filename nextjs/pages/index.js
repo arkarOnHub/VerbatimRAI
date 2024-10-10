@@ -1,20 +1,75 @@
-import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import Grid from "@mui/material/Grid2";
-import { Box, Typography, Button, TextField } from "@mui/material"; // Use by LoginForm
-import useBearStore from "@/store/useBearStore";
-import Link from 'next/link';
+// pages/index.js
 
-function Home() {
+import { Box, Button, Typography, Grid } from '@mui/material';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+
+export default function Home() {
+  const router = useRouter();
+
   return (
-    <>
+    <Box
+      sx={{
+        minHeight: '95vh',
+        backgroundColor: '#f5f5f5',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+    >
+      {/* Main Section */}
+      <Grid
+        container
+        spacing={4}
+        sx={{
+          alignItems: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <Grid item xs={12} md={6}>
+          {/* Image Section */}
+          <Image
+            src="/logo.png"
+            alt="Luxury Rental"
+            width={500}
+            height={500}
+            style={{ borderRadius: '10px' }}
+          />
+        </Grid>
 
-      <main>
-        <Box><Link href="/register">Click here to register</Link></Box>
-      </main>
-    </>
+        <Grid item xs={12} md={6}>
+          {/* Text Section */}
+          <Typography variant="h3" gutterBottom>
+            Welcome to Luxury Rentals
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4 }}>
+            Discover and rent the finest luxury items with ease. Whether it's fashion, accessories, or gadgets,
+            we’ve got you covered.
+          </Typography>
+
+          {/* Buttons */}
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => router.push('/login')}
+            sx={{ mr: 2, mb: 2, width: '150px' }}
+          >
+            Login
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            onClick={() => router.push('/signup')}
+            sx={{ mr: 2, mb: 2, width: '150px' }}
+          >
+            Signup
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
-
-export default Home;

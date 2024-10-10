@@ -21,7 +21,7 @@ const NavigationLayout = ({ children }) => {
   const isMenuOpen = Boolean(anchorEl);
 
   // List of routes where NavigationBar should be hidden
-  const hideNavRoutes = ['/login', '/signup'];
+  const hideNavRoutes = ['/login', '/signup', '/'];
 
   // Check if the current route is in the list of routes where nav is hidden
   if (hideNavRoutes.includes(router.pathname)) {

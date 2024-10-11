@@ -244,6 +244,9 @@ const HomePage = () => {
                     {product.product_name}
                   </Typography>
                   <Typography variant="body2" align="center" sx={{ color: '#888' }}>
+                    Price: ${product.product_price}
+                  </Typography>
+                  <Typography variant="body2" align="center" sx={{ color: '#888' }}>
                     Available: {product.product_quantity}
                   </Typography>
                 </CardContent>

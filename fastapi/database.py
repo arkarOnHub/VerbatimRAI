@@ -1,6 +1,6 @@
 from databases import Database
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 POSTGRES_USER = "temp"
 POSTGRES_PASSWORD = "temp"
@@ -362,4 +362,47 @@ async def get_most_rented_products():
     """
 
     # Execute the query and fetch results
+    return await database.fetch_all(query)
+
+
+# Function to get total revenue for a specific date range
+async def get_revenue_by_date(start_date: str, end_date: str):
+    query = """
+    SELECT SUM(sale_price) AS total_revenue
+    FROM sales
+    WHERE sale_date BETWEEN :start_date AND :end_date
+    """
+    result = await database.fetch_one(
+        query=query, values={"start_date": start_date, "end_date": end_date}
+    )
+    return result["total_revenue"] if result else 0
+
+
+# Function to get daily revenue for a specific date range
+async def get_daily_revenue(start_date: date, end_date: date):
+    query = """
+    SELECT sale_date, SUM(sale_price) AS daily_revenue
+    FROM sales
+    WHERE sale_date BETWEEN :start_date AND :end_date
+    GROUP BY sale_date
+    ORDER BY sale_date
+    """
+    return await database.fetch_all(
+        query=query, values={"start_date": start_date, "end_date": end_date}
+    )
+
+
+# Function to get most rented categories from the sales table
+async def get_most_rented_categories():
+    query = """
+    SELECT pc.category_name, COUNT(s.sale_id) AS rental_count
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    JOIN productcategory pc ON p.pro_category_id = pc.pro_category_id
+    GROUP BY pc.category_name
+    ORDER BY rental_count DESC
+    LIMIT 5;  -- Adjust the limit as needed
+    """
+
+    # Execute the query and fetch the results
     return await database.fetch_all(query)

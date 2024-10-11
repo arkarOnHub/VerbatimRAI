@@ -8,18 +8,13 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { BarChart } from '@mui/x-charts/BarChart';
+import axios from 'axios';
 import Sidebar from '../components/sidebar';
+import { BarChart } from '@mui/x-charts/BarChart'
+import RevenueChart from '../components/RevenueChart'; // Import the new component
+import MrcPieChart from '@/components/mrcPieChart';
 
-// Mock data for the charts
-const revenueData = {
-  series: [
-    { label: 'Bags and Accessories', data: [12000, 19000, 25000, 15000, 20000, 12000, 14000] },
-    { label: 'Watches and Jewelries', data: [5000, 10000, 20000, 15000, 9000, 8000, 17000] },
-  ],
-  xAxis: { data: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], scaleType: 'band' }
-};
-
+// Mock data for categories overview
 const categoryData = {
   series: [
     { label: 'Louis Vuitton', data: [54] },
@@ -164,21 +159,16 @@ export default function Dashboard() {
 
           {/* Charts */}
           <Grid container spacing={3} sx={{ marginTop: '20px' }}>
-            {/* Revenue Chart */}
-            <Grid item xs={12} md={8}>
+            {/* Revenue Chart from RevenueChart component */}
+            <Grid item xs={12} md={7.5}>
               <Paper sx={{ padding: '20px' }}>
-                <Typography variant="h6" sx={{ marginBottom: '20px' }}>Total Revenue</Typography>
-                <BarChart
-                  series={revenueData.series}
-                  height={300}
-                  xAxis={[revenueData.xAxis]}
-                  margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-                />
+                {/* <Typography variant="h6" sx={{ marginBottom: '20px' }}>Total Revenue</Typography> */}
+                <RevenueChart /> {/* Integrate the external RevenueChart component here */}
               </Paper>
             </Grid>
 
-            {/* Most Rented Products and Categories */}
-            <Grid item xs={12} md={4}>
+            {/* Most Rented Products and Categories Overview */}
+            <Grid item xs={12} md={4.5}>
               <Paper sx={{ padding: '20px', marginBottom: '20px' }}>
                 <Typography variant="h6" sx={{ marginBottom: '10px' }}>Most Rented Products</Typography>
                 <List>
@@ -198,12 +188,7 @@ export default function Dashboard() {
 
               <Paper sx={{ padding: '20px' }}>
                 <Typography variant="h6" sx={{ marginBottom: '10px' }}>Categories Overview</Typography>
-                <BarChart
-                  series={categoryData.series}
-                  height={300}
-                  xAxis={[categoryData.xAxis]}
-                  margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-                />
+                  <MrcPieChart/>
               </Paper>
             </Grid>
           </Grid>

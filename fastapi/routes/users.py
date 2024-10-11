@@ -81,7 +81,9 @@ async def read_user(user_id: int):
 # Endpoint to update a user
 @router.put("/users/{user_id}", response_model=UserUpdate)
 async def update_user_endpoint(user_id: int, user: UserUpdate):
-    result = await update_user(user.username, user.email, user.password_hash, user_id)
+    result = await update_user(
+        user.username, user.email, encrypt(user.password_hash), user_id
+    )
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
     return result

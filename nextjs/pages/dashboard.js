@@ -10,19 +10,8 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import Sidebar from '../components/sidebar';
-import { BarChart } from '@mui/x-charts/BarChart'
 import RevenueChart from '../components/RevenueChart'; // Import the new component
 import MrcPieChart from '@/components/mrcPieChart';
-
-// Mock data for categories overview
-const categoryData = {
-  series: [
-    { label: 'Louis Vuitton', data: [54] },
-    { label: 'Dior', data: [20] },
-    { label: 'Hermes', data: [26] },
-  ],
-  xAxis: { data: ['Louis Vuitton', 'Dior', 'Hermes'], scaleType: 'band' }
-};
 
 export default function Dashboard() {
   const [totalSales, setTotalSales] = useState(0);

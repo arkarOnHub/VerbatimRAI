@@ -19,13 +19,21 @@ export default function Orders() {
   const [rentedProducts, setRentedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userId = 10; // Replace this with your logic to get the current user's ID
+  const [userId, setUserID] = useState('');
+
+  useEffect(() => {
+    // Fetch the username from local storage (or from your session management)
+    const storedUserID = localStorage.getItem('user_id'); // Adjust this according to your session management method
+    if (storedUserID) {
+      setUserID(storedUserID);
+    }
+  }, []);
 
   // Fetch currently rented products from backend API using Axios
   useEffect(() => {
     const fetchRentedProducts = async () => {
       try {
-        const response = await axios.get(`/api/rent/current/${userId}`);
+        const response = await axios.get(`/api/rent/current`);
         console.log('Response:', response.data);  // Log response
         setRentedProducts(response.data);
         setLoading(false);

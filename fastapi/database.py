@@ -300,6 +300,16 @@ async def get_current_rentals_by_id(user_id: int):
     return current_rent
 
 
+async def get_current_rentals():
+    query = """
+    SELECT r.rent_id, r.user_id, r.product_id, p.product_name, pc.category_name
+    FROM rent r
+    JOIN products p ON r.product_id = p.product_id
+    JOIN productcategory pc ON p.pro_category_id = pc.pro_category_id
+    """
+    return await database.fetch_all(query)
+
+
 # Function to delete rent record from the rent table
 async def delete_rent(rent_id: int):
     query = "DELETE FROM rent WHERE rent_id = :rent_id RETURNING *"

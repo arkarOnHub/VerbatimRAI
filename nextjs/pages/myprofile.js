@@ -1,5 +1,21 @@
-import React from 'react';
-import { Box, Grid, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Avatar, Button, Link } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Avatar,
+  Button,
+  Link,
+} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import StyleIcon from '@mui/icons-material/Style';
@@ -24,11 +40,21 @@ const orderHistory = [
 ];
 
 export default function MyProfile() {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    // Fetch the username from local storage (or from your session management)
+    const storedUsername = localStorage.getItem('username'); // Adjust this according to your session management method
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
+
   return (
     <Box sx={{ p: 4 }}>
       {/* Header */}
       <Typography variant="h4" gutterBottom>
-        Welcome, Jim
+        Welcome, {username ? username : 'Guest'}
       </Typography>
 
       {/* Stat Cards */}

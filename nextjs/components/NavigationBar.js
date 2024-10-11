@@ -39,6 +39,14 @@ const NavigationLayout = ({ children }) => {
   // Function to check if the current route matches the link
   const isActive = (pathname) => router.pathname === pathname;
 
+  // Logout function
+  const handleLogout = () => {
+    // Clear user_id from localStorage
+    localStorage.removeItem('user_id');
+    handleMenuClose();  // Close the dropdown menu
+    router.push('/login'); // Redirect to the login page
+  };
+
   return (
     <>
       <AppBar position="sticky" elevation={0} sx={{ backgroundColor: 'white', borderBottom: '1px solid #ddd' }}>
@@ -128,11 +136,13 @@ const NavigationLayout = ({ children }) => {
                 'aria-labelledby': 'profile-menu',
               }}
             >
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
               <MenuItem onClick={handleMenuClose}>
-                <Link href="/login" underline="none" sx={{ fontWeight: 500, color: '#fff' }}>
-                  Logout
+                <Link href="/myprofile" passHref>
+                  Profile
                 </Link>
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                Logout
               </MenuItem>
             </Menu>
 

@@ -100,6 +100,15 @@ async def get_current_rentals_endpoint(user_id: int):
     return current_rentals
 
 
+# Add this function to your FastAPI app
+@router.get("/rent/current", response_model=List[RentedProduct])
+async def get_current_rentals_end():
+    current_rentals = await get_current_rentals()
+    if current_rentals is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return current_rentals
+
+
 @router.post("/rent/return")
 async def return_rent(request: ReturnRentRequest):
     # Delete the rent record

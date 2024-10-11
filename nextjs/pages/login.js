@@ -35,6 +35,11 @@ export default function Login() {
       }
 
       const data = await response.json();
+      
+      // Store user_id in localStorage
+      localStorage.setItem('user_id', data.user_id);  // Assuming the backend returns a user_id
+      localStorage.setItem('username', data.username);  // Assuming the backend returns a user_id
+      
       setSnackbarMessage('Login successful!');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);

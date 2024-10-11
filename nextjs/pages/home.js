@@ -36,6 +36,7 @@ const HomePage = () => {
     'Sunglasses & Eyewear': false,
   });
 
+  const [userId, setUserID] = useState('');
   const [products, setProducts] = useState([]);
   const [productsByCategory, setProductsByCategory] = useState({});
   const [selectedCategories, setSelectedCategories] = useState(new Set());
@@ -44,8 +45,8 @@ const HomePage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  // Mock user ID, replace with your actual user ID logic
-  const userId = 10; // Replace with the actual user ID from your authentication
+  // // Mock user ID, replace with your actual user ID logic
+  // const userId = 10; // Replace with the actual user ID from your authentication
 
   const categoryIdMapping = {
     'Designer Handbags': 1,
@@ -54,6 +55,14 @@ const HomePage = () => {
     'Premium Footwear': 4,
     'Sunglasses & Eyewear': 5,
   };
+
+  useEffect(() => {
+    // Fetch the username from local storage (or from your session management)
+    const storedUserID = localStorage.getItem('user_id'); // Adjust this according to your session management method
+    if (storedUserID) {
+      setUserID(storedUserID);
+    }
+  }, []);
 
   // Fetch all products when the page loads
   useEffect(() => {

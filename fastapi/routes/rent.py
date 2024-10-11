@@ -27,6 +27,10 @@ class ReturnRentRequest(BaseModel):
     product_id: int
 
 
+class RentCountResponse(BaseModel):
+    count: int
+
+
 # Pydantic model to represent the rent response
 class Rent(BaseModel):
     rent_id: int
@@ -34,6 +38,15 @@ class Rent(BaseModel):
     product_id: int
     rental_date: datetime = datetime.now()
     return_date: datetime  # Add return_date to the response model
+
+
+@router.get("/rents/count", response_model=RentCountResponse)
+async def get_rent_count_endpoint():
+    # Call the database function to fetch the count of categories
+    count = await get_rent_count()  # Ensure this function is defined properly
+    if count is None:  # Adjust this check based on your implementation
+        raise HTTPException(status_code=404, detail="Rents not found")
+    return {"count": count}  # Return the count in a dictionary
 
 
 # Endpoint to create a new rent
@@ -45,6 +58,14 @@ async def create_rent(rent: RentCreate):
     if current_quantity is None or current_quantity < 1:
         raise HTTPException(status_code=400, detail="Product is out of stock.")
 
+    # Fetch the product price
+    product_price = await get_product_price(
+        rent.product_id
+    )  # New function to get product price
+
+    if product_price is None:
+        raise HTTPException(status_code=404, detail="Product price not found.")
+
     # Decrement product quantity by 1
     decrement_success = await decrement_product_quantity(rent.product_id)
 
@@ -53,11 +74,19 @@ async def create_rent(rent: RentCreate):
             status_code=500, detail="Failed to update product quantity."
         )
 
-    # Insert rent record in the database with both rental_date and return_date
+    # Insert rent record in the database
     created_rent = await insert_rent(rent.user_id, rent.product_id)
 
     if not created_rent:
         raise HTTPException(status_code=500, detail="Failed to create rent.")
+
+    # Insert into sales table
+    sales_insert_success = await insert_sales(
+        rent.user_id, rent.product_id, product_price
+    )  # New function to insert into sales
+
+    if not sales_insert_success:
+        raise HTTPException(status_code=500, detail="Failed to record sale.")
 
     return created_rent
 

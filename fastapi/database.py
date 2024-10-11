@@ -45,6 +45,12 @@ async def get_user(user_id: int):
     return await database.fetch_one(query=query, values={"user_id": user_id})
 
 
+async def get_user_count():
+    query = "SELECT COUNT(*) FROM users"  # Query to count the total categories
+    count = await database.fetch_one(query=query)  # Fetch the result
+    return count[0]  # Return the count value
+
+
 # Function to select a user by email from the users table
 async def get_user_by_email(email: str, password_hash: str):
     query = (
@@ -106,6 +112,24 @@ async def get_all_products_from_db():
 async def get_product(product_id: int):
     query = "SELECT * FROM products WHERE product_id = :product_id"
     return await database.fetch_one(query=query, values={"product_id": product_id})
+
+
+async def get_product_count():
+    query = "SELECT COUNT(*) FROM products"  # Query to count the total categories
+    count = await database.fetch_one(query=query)  # Fetch the result
+    return count[0]  # Return the count value
+
+
+async def get_product_price(product_id: int):
+    query = "SELECT product_price FROM products WHERE product_id = :product_id"
+
+    # Using a dictionary for parameters
+    values = {
+        "product_id": product_id,
+    }
+
+    result = await database.fetch_one(query=query, values=values)
+    return result["product_price"] if result else None
 
 
 async def insert_product(
@@ -291,3 +315,51 @@ async def increment_product_quantity(product_id: int):
     RETURNING product_quantity
     """
     return await database.fetch_one(query=query, values={"product_id": product_id})
+
+
+async def get_rent_count():
+    query = "SELECT COUNT(*) FROM rent"  # Query to count the total categories
+    count = await database.fetch_one(query=query)  # Fetch the result
+    return count[0]  # Return the count value
+
+
+async def insert_sales(user_id: int, product_id: int, sale_price: int):
+    query = """
+    INSERT INTO sales (user_id, product_id, sale_price)
+    VALUES (:user_id, :product_id, :sale_price)
+    RETURNING sale_id, user_id, product_id, sale_price
+    """
+
+    values = {
+        "user_id": user_id,
+        "product_id": product_id,
+        "sale_price": sale_price,
+    }
+
+    return await database.fetch_one(query=query, values=values)
+
+
+async def get_total_sales():
+    query = "SELECT SUM(sale_price) AS total_sales FROM sales"
+    result = await database.fetch_one(query)
+    return result["total_sales"] if result else 0
+
+
+async def get_sale_count():
+    query = "SELECT COUNT(*) FROM sales"  # Query to count the total categories
+    count = await database.fetch_one(query=query)  # Fetch the result
+    return count[0]  # Return the count value
+
+
+async def get_most_rented_products():
+    query = """
+    SELECT p.product_id, p.product_name, COUNT(s.sale_id) AS rental_count
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    GROUP BY p.product_id, p.product_name
+    ORDER BY rental_count DESC
+    LIMIT 5;  -- Adjust the limit as needed
+    """
+
+    # Execute the query and fetch results
+    return await database.fetch_all(query)

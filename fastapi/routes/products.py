@@ -29,6 +29,10 @@ class ProductUpdate(BaseModel):
     product_description: Optional[str]
 
 
+class ProductCountResponse(BaseModel):
+    count: int
+
+
 # Define a model to represent the product
 class Product(BaseModel):
     product_id: int
@@ -48,6 +52,15 @@ async def get_products():
     if products is None:
         raise HTTPException(status_code=404, detail="Products not found")
     return products
+
+
+@router.get("/products/count", response_model=ProductCountResponse)
+async def get_product_count_endpoint():
+    # Call the database function to fetch the count of categories
+    count = await get_product_count()  # Ensure this function is defined properly
+    if count is None:  # Adjust this check based on your implementation
+        raise HTTPException(status_code=404, detail="Products not found")
+    return {"count": count}  # Return the count in a dictionary
 
 
 # Endpoint to get a Product by user_id

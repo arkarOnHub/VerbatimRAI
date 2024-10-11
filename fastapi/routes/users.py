@@ -29,6 +29,10 @@ class UserUpdate(BaseModel):
     password_hash: Optional[str]
 
 
+class UserCountResponse(BaseModel):
+    count: int
+
+
 # Pydantic model for user response
 class User(BaseModel):
     user_id: int
@@ -44,6 +48,15 @@ async def get_users():
     if products is None:
         raise HTTPException(status_code=404, detail="Products not found")
     return products
+
+
+@router.get("/users/count", response_model=UserCountResponse)
+async def get_user_count_endpoint():
+    # Call the database function to fetch the count of categories
+    count = await get_user_count()  # Ensure this function is defined properly
+    if count is None:  # Adjust this check based on your implementation
+        raise HTTPException(status_code=404, detail="Users not found")
+    return {"count": count}  # Return the count in a dictionary
 
 
 # Endpoint to create a new user

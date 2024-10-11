@@ -47,10 +47,10 @@ export default function Dashboard() {
           <Grid container spacing={3} sx={{ marginTop: '20px' }}>
             {/* Sales Cards */}
             {[
-              { label: 'Total Sales', value: '$1k', change: '+8% from yesterday', color: '#ff5252' },
-              { label: 'Total Order', value: '50', change: '+5% from yesterday', color: '#ffca28' },
-              { label: 'Product Rented', value: '5', change: '+1.2% from yesterday', color: '#66bb6a' },
-              { label: 'New Customers', value: '8', change: '0.5% from yesterday', color: '#ba68c8' },
+              { label: 'Total Sales', value: '$1k', change: '', color: '#ff5252' },
+              { label: 'Total Order', value: '50', change: '', color: '#ffca28' },
+              { label: 'Product Rented', value: '5', change: '', color: '#66bb6a' },
+              { label: 'New Customers', value: '8', change: '', color: '#ba68c8' },
               { label: 'Total Products', value: '100', color: '#ff5252' },
               { label: 'Total Categories', value: '10', color: '#ffca28' },
               { label: 'Total Available Products', value: '80', color: '#66bb6a' },

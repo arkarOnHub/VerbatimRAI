@@ -23,6 +23,10 @@ class ProductByID(BaseModel):
     pro_category_id: int
 
 
+class CategoryCountResponse(BaseModel):
+    count: int
+
+
 class Category(BaseModel):
     pro_category_id: int
     category_name: str
@@ -76,3 +80,12 @@ async def fetch_products_by_category_id(pro_category_id: int):
     if not products:
         raise HTTPException(status_code=404, detail="Products not found")
     return products
+
+
+@router.get("/categories/count", response_model=CategoryCountResponse)
+async def get_category_count_endpoint():
+    # Call the database function to fetch the count of categories
+    count = await get_category_count()  # Ensure this function is defined properly
+    if count is None:  # Adjust this check based on your implementation
+        raise HTTPException(status_code=404, detail="Categories not found")
+    return {"count": count}  # Return the count in a dictionary

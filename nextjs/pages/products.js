@@ -32,6 +32,7 @@ export default function Products() {
     productName: '',
     quantity: '',
     categoryId: '',
+    productPrice: '',
     imageUrl: '',
     description: '',
   });
@@ -76,6 +77,7 @@ const handleSubmit = async (e) => {
       product_name: formData.productName,
       product_quantity: parseInt(formData.quantity, 10), // Convert to integer
       pro_category_id: formData.categoryId, // Ensure this matches your FastAPI model
+      product_price: formData.productPrice,
       image_url: formData.imageUrl,
       product_description: formData.description,
     });
@@ -95,6 +97,7 @@ const handleSubmit = async (e) => {
         productName: '',
         quantity: '',
         categoryId: '',
+        productPrice: '',
         imageUrl: '',
         description: '',
       });
@@ -114,7 +117,6 @@ const handleSubmit = async (e) => {
   }
 };
 
-
   // Handle opening the delete confirmation dialog
   const handleOpenDialog = (productId) => {
     setSelectedProductId(productId);
@@ -126,7 +128,7 @@ const handleSubmit = async (e) => {
     setOpenDialog(false);
     setSelectedProductId(null);
     setIsUpdating(false); // Reset updating state
-    setFormData({ productName: '', quantity: '', categoryId: '', imageUrl: '', description: '' }); // Reset form data
+    setFormData({ productName: '', quantity: '', categoryId: '', productPrice: '', imageUrl: '', description: '' }); // Reset form data
   };
 
   // Handle deleting a product
@@ -147,6 +149,7 @@ const handleSubmit = async (e) => {
       productName: product.product_name,
       quantity: product.product_quantity,
       categoryId: product.pro_category_id,
+      productPrice: product.product_price,
       imageUrl: product.image_url,
       description: product.product_description,
     });
@@ -162,6 +165,7 @@ const handleUpdate = async () => {
       product_name: formData.productName,
       product_quantity: parseInt(formData.quantity, 10),
       pro_category_id: formData.categoryId,
+      product_price: formData.productPrice,
       image_url: formData.imageUrl,
       product_description: formData.description,
     });
@@ -239,6 +243,15 @@ const handleUpdate = async () => {
               ))}
             </TextField>
             <TextField
+              label="Price"
+              name="productPrice"
+              type="number"
+              value={formData.productPrice}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
+            <TextField
               label="Image URL"
               name="imageUrl"
               value={formData.imageUrl}
@@ -273,6 +286,7 @@ const handleUpdate = async () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Quantity</TableCell>
                   <TableCell>Category</TableCell>
+                  <TableCell>Price</TableCell>
                   <TableCell>Image URL</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Actions</TableCell>
@@ -285,6 +299,7 @@ const handleUpdate = async () => {
                     <TableCell>{product.product_name}</TableCell>
                     <TableCell>{product.product_quantity}</TableCell>
                     <TableCell>{product.category_name}</TableCell>
+                    <TableCell>${product.product_price}</TableCell>
                     <TableCell>{product.image_url}</TableCell>
                     <TableCell>{product.product_description}</TableCell>
                     <TableCell>
@@ -355,6 +370,15 @@ const handleUpdate = async () => {
                     </MenuItem>
                   ))}
                 </TextField>
+                <TextField
+                  label="Price"
+                  name="productPrice"
+                  type="number"
+                  value={formData.productPrice}
+                  onChange={handleChange}
+                  fullWidth
+                  sx={{ marginBottom: '10px' }}
+                />
                 <TextField
                   label="Image URL"
                   name="imageUrl"

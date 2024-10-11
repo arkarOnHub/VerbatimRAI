@@ -1,19 +1,21 @@
 import React, { useState } from "react";
-import { Box, Link, TextField, Button, Grid, Typography, Paper, Snackbar, Alert } from '@mui/material';
+import { Box, TextField, Button, Grid, Typography, Snackbar, Alert } from '@mui/material';
+import { useRouter } from 'next/router';
 
 export default function Login() {
-    const [loginEmail, setLoginEmail] = useState('');
-    const [loginPassword, setLoginPassword] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  
+  const router = useRouter(); // Initialize router
 
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
 
- const handleSnackbarClose = () => {
-   setOpenSnackbar(false);
- };
-
- const handleLoginSubmit = async (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch('/api/users/login', {
@@ -26,68 +28,25 @@ export default function Login() {
           password_hash: loginPassword,
         }),
       });
- 
- 
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Login failed');
       }
- 
- 
+
       const data = await response.json();
       setSnackbarMessage('Login successful!');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
-      // Handle successful login (e.g., redirect)
+
+      // Redirect to home page after successful login
+      router.push('/home');
     } catch (error) {
       setSnackbarMessage(error.message);
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
- 
- 
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    if (registerPassword !== registerConfirmPassword) {
-      setSnackbarMessage('Passwords do not match');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
- 
- 
-    try {
-      const response = await fetch('/api/users/create', {
-method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({
-         username: registerName,
-         email: registerEmail,
-         password_hash: registerPassword,
-       }),
-     });
-
-
-     if (!response.ok) {
-       const errorData = await response.json();
-       throw new Error(errorData.detail || 'Registration failed');
-     }
-
-
-     const data = await response.json();
-     setSnackbarMessage('Registration successful!');
-     setSnackbarSeverity('success');
-     setOpenSnackbar(true);
-     // Handle successful registration (e.g., redirect)
-   } catch (error) {
-     setSnackbarMessage(error.message);
-     setSnackbarSeverity('error');
-     setOpenSnackbar(true);
-   }
- };
 
   return (
     <Grid container sx={{ height: '100vh' }}>
@@ -126,24 +85,22 @@ method: 'POST',
             <Button
                 fullWidth
                 variant="contained"
-                sx={{ backgroundColor: '#757575', marginTop: '40px', padding: '10px 0' }} type="submit"
+                sx={{ backgroundColor: '#757575', marginTop: '40px', padding: '10px 0' }}
+                type="submit"
             >
-                <Link href="/home" underline="none" sx={{ fontWeight: 500 }}>Login</Link>
+                Login
             </Button>
           </form>
           <Typography sx={{ marginTop: '10px', textAlign: 'left' }}>
-            Don’t have an account? <Link href="/signup" underline="none" sx={{ fontWeight: 500 }}>Signup</Link>
+            Don’t have an account? <Button href="/signup" variant="text" sx={{ fontWeight: 500 }}>Signup</Button>
           </Typography>
         </Box>
       </Grid>
       <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleSnackbarClose}>
-       <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-         {snackbarMessage}
-       </Alert>
-     </Snackbar>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }
-
-
-{/* <Link href="/register" underline="none" sx={{ fontWeight: 500, color: '#fff' }}>Login</Link> */}

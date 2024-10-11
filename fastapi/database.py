@@ -95,7 +95,7 @@ async def delete_user(user_id: int):
 # Function to select all products from the products table
 async def get_all_products_from_db():
     query = """
-    SELECT p.product_id, p.product_name, p.product_quantity, p.image_url, p.product_description, p.pro_category_id, c.category_name
+    SELECT p.product_id, p.product_name, p.product_quantity, p.product_price, p.image_url, p.product_description, p.pro_category_id, c.category_name
     FROM products p
     JOIN productcategory c ON p.pro_category_id = c.pro_category_id
     """
@@ -112,17 +112,19 @@ async def insert_product(
     product_name: str,
     product_quantity: int,
     pro_category_id: int,
+    product_price: int,
     image_url: str,
     product_description: str,
 ):
     # Example implementation to insert the product into the database
-    query = """INSERT INTO products (product_name, product_quantity, pro_category_id, image_url, product_description)
-    VALUES (:product_name,  :product_quantity, :pro_category_id, :image_url, :product_description)
-    RETURNING product_id, product_name, product_quantity, pro_category_id, image_url, product_description,created_at"""
+    query = """INSERT INTO products (product_name, product_quantity, pro_category_id, product_price, image_url, product_description)
+    VALUES (:product_name,  :product_quantity, :pro_category_id, :product_price, :image_url, :product_description)
+    RETURNING product_id, product_name, product_quantity, pro_category_id, product_price, image_url, product_description,created_at"""
     values = {
         "product_name": product_name,
         "product_quantity": product_quantity,
         "pro_category_id": pro_category_id,
+        "product_price": product_price,
         "image_url": image_url,
         "product_description": product_description,
     }
@@ -133,6 +135,7 @@ async def update_product(
     product_name,
     product_quantity,
     pro_category_id,
+    product_price,
     image_url,
     product_description,
     product_id,
@@ -142,6 +145,7 @@ async def update_product(
     SET product_name = :product_name,
         product_quantity = :product_quantity,
         pro_category_id = :pro_category_id,
+        product_price = :product_price,
         image_url = :image_url,
         product_description = :product_description
     WHERE product_id = :product_id
@@ -152,6 +156,7 @@ async def update_product(
         "product_name": product_name,
         "product_quantity": product_quantity,
         "pro_category_id": pro_category_id,
+        "product_price": product_price,
         "image_url": image_url,
         "product_description": product_description,
     }
@@ -200,6 +205,14 @@ async def get_products_by_category_id(pro_category_id: int):
             query=query, values={"pro_category_id": pro_category_id}
         )
     return products
+
+
+async def get_category_count():
+    query = (
+        "SELECT COUNT(*) FROM productcategory"  # Query to count the total categories
+    )
+    count = await database.fetch_one(query=query)  # Fetch the result
+    return count[0]  # Return the count value
 
 
 # Insert a new rent record

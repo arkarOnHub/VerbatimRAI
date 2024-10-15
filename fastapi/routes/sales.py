@@ -115,3 +115,50 @@ async def most_rented_categories():
     return {
         "categories": [MostRentedCategory(**category) for category in categories]
     }  # Return the categories in the expected format
+
+
+@router.get("/sales/total/{user_id}", response_model=TotalSalesResponse)
+async def get_total_sales_endpoint(user_id: int):
+    total_sales = await get_total_sales_by_id(user_id)
+    if total_sales is None:
+        raise HTTPException(status_code=404, detail="No sales found for this user")
+    return {"total_sales": total_sales}
+
+
+@router.get("/sales/count/{user_id}", response_model=SalesCountResponse)
+async def get_sale_count_by_id_endpoint(user_id: int):
+    # Call the database function to fetch the count of categories
+    count = await get_sale_count_by_id(
+        user_id
+    )  # Ensure this function is defined properly
+    if count is None:  # Adjust this check based on your implementation
+        raise HTTPException(status_code=404, detail="Sales not found")
+    return {"count": count}  # Return the count in a dictionary
+
+
+# Route to get the most rented product name by user_id
+@router.get("/sales/most-rented-product/{user_id}", response_model=str)
+async def most_rented_product_by_id_endpoint(user_id: int):
+    product = await get_most_rented_products_by_id(
+        user_id
+    )  # Call the database function
+    if not product:
+        raise HTTPException(status_code=404, detail="No rented products found")
+
+    # Return only the product_name
+    return product["product_name"]
+
+
+# Route to get the most rented category name by user_id
+@router.get("/sales/most-rented-category/{user_id}", response_model=str)
+async def most_rented_category_by_user_id_endpoint(user_id: int):
+    category = await get_most_rented_category_by_user_id(
+        user_id
+    )  # Call the database function
+    if not category:
+        raise HTTPException(
+            status_code=404, detail="No rented categories found for this user"
+        )
+
+    # Return only the category_name
+    return category["category_name"]

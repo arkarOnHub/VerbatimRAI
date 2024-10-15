@@ -416,3 +416,58 @@ async def get_most_rented_categories():
 
     # Execute the query and fetch the results
     return await database.fetch_all(query)
+
+
+async def get_total_sales_by_id(user_id: int):
+    query = """
+    SELECT SUM(sale_price) AS total_sales
+    FROM sales
+    WHERE user_id = :user_id
+    """
+    result = await database.fetch_one(query, values={"user_id": user_id})
+    return result["total_sales"] if result and result["total_sales"] is not None else 0
+
+
+async def get_sale_count_by_id(user_id: int):
+    query = """SELECT COUNT(*) FROM sales
+    WHERE user_id = :user_id"""  # Query to count the total categories
+    count = await database.fetch_one(
+        query, values={"user_id": user_id}
+    )  # Fetch the result
+    return count[0]  # Return the count value
+
+
+async def get_most_rented_products_by_id(user_id: int):
+    query = """
+    SELECT p.product_name, COUNT(s.sale_id) AS rental_count
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    WHERE s.user_id = :user_id
+    GROUP BY p.product_name
+    ORDER BY rental_count DESC
+    LIMIT 1;
+    """
+
+    # Execute the query and fetch results
+    return await database.fetch_one(
+        query, values={"user_id": user_id}
+    )  # Fetch a single result
+
+
+# Function to get most rented category by user_id
+async def get_most_rented_category_by_user_id(user_id: int):
+    query = """
+    SELECT pc.category_name, COUNT(s.sale_id) AS rental_count
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    JOIN productcategory pc ON p.pro_category_id = pc.pro_category_id
+    WHERE s.user_id = :user_id
+    GROUP BY pc.category_name
+    ORDER BY rental_count DESC
+    LIMIT 1;  -- Adjust the limit if needed
+    """
+
+    # Execute the query and fetch the result
+    return await database.fetch_one(
+        query, values={"user_id": user_id}
+    )  # Fetch a single result

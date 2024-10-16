@@ -45,6 +45,7 @@ export default function MyProfile() {
   const [mostRentedCategoryById, setMostRentedCategoryById] = useState('');
   const [currentOrders, setCurrentOrders] = useState([]);
   const [rentedProducts, setRentedProducts] = useState([]);
+  const [rentalHistory, setRentalHistory] = useState([]); // New state for rental history
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserID] = useState('');
@@ -109,12 +110,25 @@ export default function MyProfile() {
       }
     };
 
+    // Fetch rental history
+    const fetchRentalHistory = async () => {
+      try {
+        const response = await fetch(`/api/rent/rental-history/${storedUserId}`);
+        const data = await response.json();
+        setRentalHistory(data);
+      } catch (error) {
+        console.error('Error fetching rental history:', error);
+      }
+    };
+
     fetchTotalSalesById();
     fetchTotalOrdersById();
     fetchMostRentedProductById();
     fetchMostRentedCategoryById();
-    fetchCurrentOrders(); // Fetch current orders
+    fetchCurrentOrders();
+    fetchRentalHistory(); // Fetch rental history
   }, []);
+
   // Fetch currently rented products from backend API using Axios
   useEffect(() => {
     const fetchRentedProducts = async () => {
@@ -165,8 +179,8 @@ export default function MyProfile() {
 
   return (
     <Box sx={{ padding: '20px' }}>
-    {/* Header */}
-    <Typography variant="h4" gutterBottom>
+      {/* Header */}
+      <Typography variant="h4" gutterBottom>
         Welcome, {username ? username : 'Guest'}
       </Typography>
 
@@ -212,6 +226,8 @@ export default function MyProfile() {
           />
         </Grid>
       </Grid>
+
+      {/* Current Rented Products */}
       <Typography variant="h4" sx={{ marginBottom: '20px' }}>Current Rented Products</Typography>
 
       {/* Display loading spinner or error message */}
@@ -232,17 +248,17 @@ export default function MyProfile() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rentedProducts.map((rental) => (
-                <TableRow key={rental.rent_id}> {/* Use rent_id as the key */}
-                  <TableCell>{rental.user_id}</TableCell>
-                  <TableCell>{rental.product_id}</TableCell>
-                  <TableCell>{rental.product_name}</TableCell>
-                  <TableCell>{rental.category_name}</TableCell>
+              {rentedProducts.map((item) => (
+                <TableRow key={item.rent_id}>
+                  <TableCell>{item.user_id}</TableCell>
+                  <TableCell>{item.product_id}</TableCell>
+                  <TableCell>{item.product_name}</TableCell>
+                  <TableCell>{item.category_name}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
                       color="secondary"
-                      onClick={() => handleReturn(rental.rent_id, rental.product_id)} // Call handleReturn on click
+                      onClick={() => handleReturn(item.rent_id, item.product_id)}
                     >
                       Return
                     </Button>
@@ -254,8 +270,33 @@ export default function MyProfile() {
         </TableContainer>
       )}
 
-      {/* Snackbar for return messages */}
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+      {/* Rental History */}
+      <Typography variant="h4" sx={{ marginTop: '40px', marginBottom: '20px' }}>Rental History</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>User ID</TableCell>
+              <TableCell>Product ID</TableCell>
+              <TableCell>Product Name</TableCell>
+              <TableCell>Category Name</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rentalHistory.map((item) => (
+              <TableRow key={item.sale_id}>
+                <TableCell>{item.user_id}</TableCell>
+                <TableCell>{item.product_id}</TableCell>
+                <TableCell>{item.product_name}</TableCell>
+                <TableCell>{item.category_name}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Snackbar for success/error messages */}
+      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
           {snackbarMessage}
         </Alert>

@@ -124,3 +124,15 @@ async def return_rent(request: ReturnRentRequest):
         )
 
     return {"message": "Product returned successfully."}
+
+
+@router.get("/rent/rental-history/{user_id}", response_model=List[dict])
+async def get_rental_history_by_user_id(user_id: int):
+    rentals = await get_rental_history(user_id)
+    if not rentals:
+        raise HTTPException(status_code=404, detail="No rental history found")
+
+    # Convert the result into a list of dictionaries
+    rental_history = [dict(rental) for rental in rentals]
+
+    return rental_history

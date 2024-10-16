@@ -471,3 +471,16 @@ async def get_most_rented_category_by_user_id(user_id: int):
     return await database.fetch_one(
         query, values={"user_id": user_id}
     )  # Fetch a single result
+
+
+async def get_rental_history(user_id: int):
+    query = """
+    SELECT s.user_id, p.product_id, p.product_name, pc.category_name
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    JOIN productcategory pc ON p.pro_category_id = pc.pro_category_id
+    WHERE s.user_id = :user_id;
+    """
+
+    # Execute the query and fetch results
+    return await database.fetch_all(query, values={"user_id": user_id})

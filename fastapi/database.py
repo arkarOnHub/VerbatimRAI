@@ -2,6 +2,11 @@ from databases import Database
 from typing import Optional, List
 from datetime import datetime, timedelta, date
 
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 POSTGRES_USER = "temp"
 POSTGRES_PASSWORD = "temp"
 POSTGRES_DB = "advcompro"
@@ -504,11 +509,12 @@ async def get_sales_by_product(start_date, end_date):
     SELECT p.product_name, SUM(s.sale_price) as total_sales
     FROM sales s
     JOIN products p ON s.product_id = p.product_id
-    WHERE s.sale_date BETWEEN $1 AND $2
+    WHERE s.sale_date BETWEEN :start_date AND :end_date
     GROUP BY p.product_name
     ORDER BY total_sales DESC;
     """
-    return await database.fetch_all(query, [start_date, end_date])
+    params = {"start_date": start_date, "end_date": end_date}
+    return await database.fetch_all(query, params)
 
 
 async def get_sales_by_category(start_date, end_date):
@@ -516,12 +522,13 @@ async def get_sales_by_category(start_date, end_date):
     SELECT c.category_name, SUM(s.sale_price) as total_sales
     FROM sales s
     JOIN products p ON s.product_id = p.product_id
-    JOIN categories c ON p.category_id = c.category_id
-    WHERE s.sale_date BETWEEN $1 AND $2
+    JOIN productcategory c ON p.pro_category_id = c.pro_category_id
+    WHERE s.sale_date BETWEEN :start_date AND :end_date
     GROUP BY c.category_name
     ORDER BY total_sales DESC;
     """
-    return await database.fetch_all(query, [start_date, end_date])
+    params = {"start_date": start_date, "end_date": end_date}
+    return await database.fetch_all(query, params)
 
 
 async def get_user_sales(start_date, end_date):
@@ -529,8 +536,54 @@ async def get_user_sales(start_date, end_date):
     SELECT u.username, SUM(s.sale_price) as total_sales
     FROM sales s
     JOIN users u ON s.user_id = u.user_id
-    WHERE s.sale_date BETWEEN $1 AND $2
+    WHERE s.sale_date BETWEEN :start_date AND :end_date
     GROUP BY u.username
     ORDER BY total_sales DESC;
     """
-    return await database.fetch_all(query, [start_date, end_date])
+    params = {"start_date": start_date, "end_date": end_date}
+    return await database.fetch_all(query, params)
+
+
+def generate_pdf(data):
+    # Create a buffer to hold the PDF data
+    buffer = io.BytesIO()
+
+    # Create a PDF document using the buffer
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+    # Create table data (headers + rows)
+    table_data = []
+    if data:
+        # Add headers (keys from the first row)
+        headers = list(data[0].keys())
+        table_data.append(headers)
+
+        # Add rows
+        for row in data:
+            table_data.append(list(row.values()))
+
+    # Create a table with the data
+    table = Table(table_data)
+
+    # Style the table (optional)
+    style = TableStyle(
+        [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+        ]
+    )
+    table.setStyle(style)
+
+    # Build the PDF
+    elements = [table]
+    doc.build(elements)
+
+    # Get the PDF data from the buffer
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    return pdf_data

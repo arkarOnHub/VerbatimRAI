@@ -216,14 +216,14 @@ async def download_sales_report(
             headers={"Content-Disposition": "attachment; filename=sales_report.csv"},
         )
 
-    # elif file_format == "pdf":
-    #     # Implement PDF generation here
-    #     pdf_content = generate_pdf(data)  # Call your PDF generation function
-    #     return StreamingResponse(
-    #         io.BytesIO(pdf_content),
-    #         media_type="application/pdf",
-    #         headers={"Content-Disposition": "attachment; filename=sales_report.pdf"},
-    #     )
+    elif file_format == "pdf":
+        # Generate PDF content
+        pdf_content = generate_pdf(data)  # Use the PDF generation function
+        return StreamingResponse(
+            io.BytesIO(pdf_content),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=sales_report.pdf"},
+        )
 
     else:
         raise HTTPException(

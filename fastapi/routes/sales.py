@@ -1,8 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta, date
 from database import *
+import csv
+import io
 
 router = APIRouter()
 
@@ -162,3 +165,67 @@ async def most_rented_category_by_user_id_endpoint(user_id: int):
 
     # Return only the category_name
     return category["category_name"]
+
+
+@router.get("/sales/report/download")
+async def download_sales_report(
+    report_type: str,
+    start_date: str,
+    end_date: str,
+    file_format: str,
+):
+    # Validate date inputs
+    try:
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Use YYYY-MM-DD."
+        )
+
+    # Fetch data based on report type
+    if report_type == "total-sales":
+        data = await get_total_sales_report(start_date_obj, end_date_obj)
+    elif report_type == "sales-by-product":
+        data = await get_sales_by_product(start_date_obj, end_date_obj)
+    elif report_type == "sales-by-category":
+        data = await get_sales_by_category(start_date_obj, end_date_obj)
+    elif report_type == "user-sales":
+        data = await get_user_sales(start_date_obj, end_date_obj)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid report type")
+
+    if file_format == "csv":
+        # Generate CSV file
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Write headers
+        if data:
+            writer.writerow(data[0].keys())  # Write headers from the first row
+
+            # Write data rows
+            for row in data:
+                writer.writerow(row.values())
+
+        output.seek(0)
+
+        return StreamingResponse(
+            output,
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=sales_report.csv"},
+        )
+
+    # elif file_format == "pdf":
+    #     # Implement PDF generation here
+    #     pdf_content = generate_pdf(data)  # Call your PDF generation function
+    #     return StreamingResponse(
+    #         io.BytesIO(pdf_content),
+    #         media_type="application/pdf",
+    #         headers={"Content-Disposition": "attachment; filename=sales_report.pdf"},
+    #     )
+
+    else:
+        raise HTTPException(
+            status_code=400, detail="Invalid file format. Use 'csv' or 'pdf'."
+        )

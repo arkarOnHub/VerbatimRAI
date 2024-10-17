@@ -484,3 +484,53 @@ async def get_rental_history(user_id: int):
 
     # Execute the query and fetch results
     return await database.fetch_all(query, values={"user_id": user_id})
+
+
+async def get_total_sales_report(start_date, end_date):
+    query = """
+    SELECT sale_date, SUM(sale_price) AS total_sales
+    FROM sales
+    WHERE sale_date BETWEEN :start_date AND :end_date
+    GROUP BY sale_date
+    ORDER BY sale_date;
+    """
+    # Using a dictionary to bind parameters
+    params = {"start_date": start_date, "end_date": end_date}
+    return await database.fetch_all(query, params)
+
+
+async def get_sales_by_product(start_date, end_date):
+    query = """
+    SELECT p.product_name, SUM(s.sale_price) as total_sales
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    WHERE s.sale_date BETWEEN $1 AND $2
+    GROUP BY p.product_name
+    ORDER BY total_sales DESC;
+    """
+    return await database.fetch_all(query, [start_date, end_date])
+
+
+async def get_sales_by_category(start_date, end_date):
+    query = """
+    SELECT c.category_name, SUM(s.sale_price) as total_sales
+    FROM sales s
+    JOIN products p ON s.product_id = p.product_id
+    JOIN categories c ON p.category_id = c.category_id
+    WHERE s.sale_date BETWEEN $1 AND $2
+    GROUP BY c.category_name
+    ORDER BY total_sales DESC;
+    """
+    return await database.fetch_all(query, [start_date, end_date])
+
+
+async def get_user_sales(start_date, end_date):
+    query = """
+    SELECT u.username, SUM(s.sale_price) as total_sales
+    FROM sales s
+    JOIN users u ON s.user_id = u.user_id
+    WHERE s.sale_date BETWEEN $1 AND $2
+    GROUP BY u.username
+    ORDER BY total_sales DESC;
+    """
+    return await database.fetch_all(query, [start_date, end_date])

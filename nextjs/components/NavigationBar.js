@@ -136,11 +136,6 @@ const NavigationLayout = ({ children }) => {
                 'aria-labelledby': 'profile-menu',
               }}
             >
-              <MenuItem onClick={handleMenuClose}>
-                <Link href="/myprofile" passHref>
-                  Profile
-                </Link>
-              </MenuItem>
               <MenuItem onClick={handleLogout}>
                 Logout
               </MenuItem>

@@ -1,119 +1,158 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Typography,
-  Button,
-  IconButton,
   Grid,
-  Divider,
+  Typography,
   Card,
   CardContent,
   CardMedia,
-  TextField
+  CardActions,
+  IconButton,
+  Button,
+  Snackbar,
+  Alert,
+  Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
 
 const CartPage = () => {
-  const cartItems = [
-    {
-      id: 1,
-      name: 'Luxury Handbag',
-      price: 250,
-      image: '/handbag.jpg',
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: 'Designer Watch',
-      price: 500,
-      image: '/watch.jpg',
-      quantity: 1,
-    },
-  ];
+  const [cartItems, setCartItems] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleRemoveItem = (id) => {
-    // Remove item logic
+  useEffect(() => {
+    // Load the cart from localStorage when the page loads
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    setCartItems(cart);
+  }, []);
+
+  // Remove an item from the cart
+  const handleRemoveFromCart = (productId) => {
+    const updatedCart = cartItems.filter((item) => item.product_id !== productId);
+    setCartItems(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    setSnackbarMessage('Product removed from cart');
+    setSnackbarSeverity('info');
+    setSnackbarOpen(true);
   };
 
-  const handleQuantityChange = (id, quantity) => {
-    // Update quantity logic
+  // Confirm the cart and send the products to the backend
+  const handleConfirmCart = async () => {
+    try {
+      const userId = localStorage.getItem('user_id'); // Retrieve the user ID from localStorage
+
+      // Send each cart item to the backend to create the rental
+      for (const item of cartItems) {
+        await axios.post('/api/rent/create', {
+          user_id: userId,
+          product_id: item.product_id,
+          rental_date: new Date().toISOString(),
+        });
+      }
+
+      // Clear the cart after confirmation
+      localStorage.removeItem('cart');
+      setCartItems([]);
+
+      setSnackbarMessage('Cart confirmed and products rented!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error confirming cart:', error);
+      setSnackbarMessage('Failed to confirm cart');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
   };
 
-  const totalPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  // Close the snackbar
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbarOpen(false);
+  };
 
   return (
-    <Box p={4}>
-      <Typography variant="h4" gutterBottom>
-        Shopping Cart
+    <Box sx={{ margin: '30px' }}>
+      <Typography variant="h4" sx={{ paddingBottom: '20px', textAlign: 'center', fontWeight: 'bold' }}>
+        Your Cart
       </Typography>
 
-      <Grid container spacing={2}>
-        {/* Cart Items Section */}
-        <Grid item xs={12} md={8}>
+      {cartItems.length === 0 ? (
+        <Typography variant="h6" sx={{ margin: '30px', textAlign: 'center', color: '#666' }}>
+          Your cart is empty.
+        </Typography>
+      ) : (
+        <Grid container spacing={2} justifyContent="center">
           {cartItems.map((item) => (
-            <Card key={item.id} sx={{ display: 'flex', mb: 2 }}>
-              <CardMedia
-                component="img"
-                sx={{ width: 151 }}
-                image={item.image}
-                alt={item.name}
-              />
-              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <CardContent>
-                  <Typography variant="h6">{item.name}</Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    Price: ${item.price}
+            <Grid item xs={12} sm={6} md={3} key={item.product_id}> {/* Adjusted to md={3} for smaller size */}
+              <Card
+                sx={{
+                  borderRadius: '10px',
+                  boxShadow: 2,
+                  height: '250px', // Reduced fixed height for all cards
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s',
+                  '&:hover': { transform: 'scale(1.03)' },
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  height="80" // Reduced height for images
+                  image={item.image_url || 'https://i.imgur.com/NDhQep7.png'}
+                  alt={item.product_name}
+                  sx={{ objectFit: 'contain', width: '100%', padding: '5px' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" align="center" sx={{ fontWeight: 'bold' }}>
+                    {item.product_name}
                   </Typography>
-                  <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-                    <Typography>Qty:</Typography>
-                    <TextField
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                      sx={{ width: 60, ml: 2 }}
-                      inputProps={{ min: 1 }}
-                    />
-                  </Box>
+                  <Typography variant="body1" align="center" sx={{ color: '#888' }}>
+                    Price: ${item.product_price}
+                  </Typography>
+                  <Typography variant="body2" align="center" sx={{ color: '#888' }}>
+                    Quantity: {item.quantity}
+                  </Typography>
                 </CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-                  <IconButton onClick={() => handleRemoveItem(item.id)} color="error">
+                <CardActions sx={{ justifyContent: 'center' }}>
+                  <IconButton
+                    aria-label="remove from cart"
+                    color="error"
+                    onClick={() => handleRemoveFromCart(item.product_id)}
+                  >
                     <DeleteIcon />
                   </IconButton>
-                </Box>
-              </Box>
-            </Card>
+                </CardActions>
+              </Card>
+            </Grid>
           ))}
-        </Grid>
 
-        {/* Order Summary Section */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Order Summary
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body1">Subtotal</Typography>
-              <Typography variant="body1">${totalPrice.toFixed(2)}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body1">Shipping</Typography>
-              <Typography variant="body1">Free</Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6">Total</Typography>
-              <Typography variant="h6">${totalPrice.toFixed(2)}</Typography>
-            </Box>
-            <Button variant="contained" color="primary" fullWidth>
-              Checkout
-            </Button>
-          </Card>
+          {cartItems.length > 0 && (
+            <Grid item xs={12} sx={{ textAlign: 'center' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ padding: '10px 30px', borderRadius: '30px', fontWeight: 'bold', marginTop: '20px' }}
+                onClick={handleConfirmCart}
+              >
+                Confirm and Rent
+              </Button>
+            </Grid>
+          )}
         </Grid>
-      </Grid>
+      )}
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

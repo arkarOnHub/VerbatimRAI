@@ -16,13 +16,12 @@ import {
   Paper,
   Button,
   Snackbar,
-  Alert,  // Import Alert for Snackbar
+  Alert, // Import Alert for Snackbar
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import StyleIcon from '@mui/icons-material/Style';
 import BrandIcon from '@mui/icons-material/LocalOffer';
-
 
 // Reusable SummaryCard component
 const SummaryCard = ({ icon, value, label, bgColor, iconColor }) => (
@@ -48,103 +47,115 @@ export default function MyProfile() {
   const [rentalHistory, setRentalHistory] = useState([]); // New state for rental history
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userId, setUserID] = useState('');
+  const [userId, setUserId] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar visibility state
   const [snackbarMessage, setSnackbarMessage] = useState(''); // Snackbar message
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
+    const storedUserId = localStorage.getItem('user_id');
+
     if (storedUsername) {
       setUsername(storedUsername);
     }
 
-    const storedUserId = localStorage.getItem('user_id');
+    if (storedUserId) {
+      setUserId(storedUserId); // Set the userId state
 
-    const fetchTotalSalesById = async () => {
-      try {
-        const response = await fetch(`/api/sales/total/${storedUserId}`);
-        const data = await response.json();
-        setTotalSalesById(data.total_sales);
-      } catch (error) {
-        console.error('Error fetching total sales:', error);
-      }
-    };
-
-    const fetchTotalOrdersById = async () => {
-      try {
-        const response = await fetch(`/api/sales/count/${storedUserId}`);
-        const data = await response.json();
-        setTotalOrdersById(data.count);
-      } catch (error) {
-        console.error('Error fetching total orders:', error);
-      }
-    };
-
-    const fetchMostRentedProductById = async () => {
-      try {
-        const response = await fetch(`/api/sales/most-rented-product/${storedUserId}`);
-        const data = await response.json();
-        setMostRentedProductById(data);
-      } catch (error) {
-        console.error('Error fetching most rented product:', error);
-      }
-    };
-
-    const fetchMostRentedCategoryById = async () => {
-      try {
-        const response = await fetch(`/api/sales/most-rented-category/${storedUserId}`);
-        const data = await response.json();
-        setMostRentedCategoryById(data);
-      } catch (error) {
-        console.error('Error fetching most rented category:', error);
-      }
-    };
-
-    const fetchCurrentOrders = async () => {
-      try {
-        const response = await fetch(`/api/rent/current/${storedUserId}`); // Adjust the API endpoint as needed
-        const data = await response.json();
-        setCurrentOrders(data);
-      } catch (error) {
-        console.error('Error fetching current orders:', error);
-      }
-    };
-
-    // Fetch rental history
-    const fetchRentalHistory = async () => {
-      try {
-        const response = await fetch(`/api/rent/rental-history/${storedUserId}`);
-        const data = await response.json();
-        setRentalHistory(data);
-      } catch (error) {
-        console.error('Error fetching rental history:', error);
-      }
-    };
-
-    fetchTotalSalesById();
-    fetchTotalOrdersById();
-    fetchMostRentedProductById();
-    fetchMostRentedCategoryById();
-    fetchCurrentOrders();
-    fetchRentalHistory(); // Fetch rental history
+      // Fetch data using userId
+      fetchTotalSalesById(storedUserId);
+      fetchTotalOrdersById(storedUserId);
+      fetchMostRentedProductById(storedUserId);
+      fetchMostRentedCategoryById(storedUserId);
+      fetchCurrentOrders(storedUserId);
+      fetchRentalHistory(storedUserId);
+    }
   }, []);
+
+  // Fetch total sales by userId
+  const fetchTotalSalesById = async (userId) => {
+    try {
+      const response = await fetch(`/api/sales/total/${userId}`);
+      const data = await response.json();
+      setTotalSalesById(data.total_sales);
+    } catch (error) {
+      console.error('Error fetching total sales:', error);
+    }
+  };
+
+  // Fetch total orders by userId
+  const fetchTotalOrdersById = async (userId) => {
+    try {
+      const response = await fetch(`/api/sales/count/${userId}`);
+      const data = await response.json();
+      setTotalOrdersById(data.count);
+    } catch (error) {
+      console.error('Error fetching total orders:', error);
+    }
+  };
+
+  // Fetch most rented product by userId
+  const fetchMostRentedProductById = async (userId) => {
+    try {
+      const response = await fetch(`/api/sales/most-rented-product/${userId}`);
+      const data = await response.json();
+      setMostRentedProductById(data);
+    } catch (error) {
+      console.error('Error fetching most rented product:', error);
+    }
+  };
+
+  // Fetch most rented category by userId
+  const fetchMostRentedCategoryById = async (userId) => {
+    try {
+      const response = await fetch(`/api/sales/most-rented-category/${userId}`);
+      const data = await response.json();
+      setMostRentedCategoryById(data);
+    } catch (error) {
+      console.error('Error fetching most rented category:', error);
+    }
+  };
+
+  // Fetch current orders by userId
+  const fetchCurrentOrders = async (userId) => {
+    try {
+      const response = await fetch(`/api/rent/current/${userId}`);
+      const data = await response.json();
+      setCurrentOrders(data);
+    } catch (error) {
+      console.error('Error fetching current orders:', error);
+    }
+  };
+
+  // Fetch rental history by userId
+  const fetchRentalHistory = async (userId) => {
+    try {
+      const response = await fetch(`/api/rent/rental-history/${userId}`);
+      const data = await response.json();
+      setRentalHistory(data);
+    } catch (error) {
+      console.error('Error fetching rental history:', error);
+    }
+  };
 
   // Fetch currently rented products from backend API using Axios
   useEffect(() => {
     const fetchRentedProducts = async () => {
       try {
-        const response = await axios.get(`/api/rent/current`);
-        console.log('Response:', response.data);  // Log response
+        const response = await axios.get(`/api/rent/current/${userId}`);
+        console.log('Response:', response.data);
         setRentedProducts(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching rented products:', err.response || err.message);  // Log detailed error
+        console.error('Error fetching rented products:', err.response || err.message);
         setError('Failed to load rented products');
         setLoading(false);
       }
     };
 
-    fetchRentedProducts();
+    if (userId) {
+      fetchRentedProducts();
+    }
   }, [userId]);
 
   // Function to handle product return
@@ -157,7 +168,7 @@ export default function MyProfile() {
       });
 
       // Update the state after return
-      setRentedProducts(rentedProducts.filter(item => item.rent_id !== rentId));
+      setRentedProducts((prevProducts) => prevProducts.filter(item => item.rent_id !== rentId));
 
       // Show success message
       setSnackbarMessage('Product returned successfully!');
@@ -244,21 +255,21 @@ export default function MyProfile() {
                 <TableCell>Product ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Category</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rentedProducts.map((item) => (
-                <TableRow key={item.rent_id}>
-                  <TableCell>{item.user_id}</TableCell>
-                  <TableCell>{item.product_id}</TableCell>
-                  <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{item.category_name}</TableCell>
+              {rentedProducts.map((product) => (
+                <TableRow key={product.rent_id}>
+                  <TableCell>{userId}</TableCell>
+                  <TableCell>{product.product_id}</TableCell>
+                  <TableCell>{product.product_name}</TableCell>
+                  <TableCell>{product.category_name}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
-                      color="secondary"
-                      onClick={() => handleReturn(item.rent_id, item.product_id)}
+                      color="primary"
+                      onClick={() => handleReturn(product.rent_id, product.product_id)}
                     >
                       Return
                     </Button>
@@ -270,37 +281,39 @@ export default function MyProfile() {
         </TableContainer>
       )}
 
+      {/* Snackbar for feedback messages */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
       {/* Rental History */}
-      <Typography variant="h4" sx={{ marginTop: '40px', marginBottom: '20px' }}>Rental History</Typography>
+      <Typography variant="h4" sx={{ marginTop: '40px' }}>Rental History</Typography>
+
+      {/* Display rental history */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>User ID</TableCell>
               <TableCell>Product ID</TableCell>
-              <TableCell>Product Name</TableCell>
-              <TableCell>Category Name</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Category</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rentalHistory.map((item) => (
-              <TableRow key={item.sale_id}>
-                <TableCell>{item.user_id}</TableCell>
-                <TableCell>{item.product_id}</TableCell>
-                <TableCell>{item.product_name}</TableCell>
-                <TableCell>{item.category_name}</TableCell>
+            {rentalHistory.map((rental) => (
+              <TableRow key={rental.rent_id}>
+                <TableCell>{userId}</TableCell>
+                <TableCell>{rental.product_id}</TableCell>
+                <TableCell>{rental.product_name}</TableCell>
+                <TableCell>{rental.category_name}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Snackbar for success/error messages */}
-      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

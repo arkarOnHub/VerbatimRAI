@@ -134,27 +134,48 @@ const HomePage = () => {
   });
 
   // Function to add a product to the cart
-  const handleAddToCart = async (productId) => {
+  const handleAddToCart = (productId) => {
     try {
-      const response = await axios.post('/api/rent/create', {
-        user_id: userId,  // Replace with the actual user ID
-        product_id: productId,
-        rental_date: new Date().toISOString(), // You can set this to the current date or a specific date
-      });
-      console.log('Product added to cart:', response.data);
+      // Get the current cart from localStorage, or initialize an empty array if it doesn't exist
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
   
-      // Update the product quantity in the local state
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product.product_id === productId
-            ? { ...product, product_quantity: product.product_quantity - 1 } // Decrement the quantity by 1
-            : product
-        )
-      );
+      // Find the product by its productId in the state
+      const selectedProduct = products.find(product => product.product_id === productId);
   
-      setSnackbarMessage('Product added to cart successfully!');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
+      // Check if the product exists in the cart
+      const existingProduct = cart.find(item => item.product_id === productId);
+  
+      if (selectedProduct && selectedProduct.product_quantity > 0) {
+        // If product is already in the cart, update its quantity
+        if (existingProduct) {
+          existingProduct.quantity += 1;
+        } else {
+          // If not, add it to the cart with a quantity of 1
+          cart.push({ ...selectedProduct, quantity: 1 });
+        }
+  
+        // Save the updated cart back to localStorage
+        localStorage.setItem('cart', JSON.stringify(cart));
+  
+        // Update the product quantity in the products state
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.product_id === productId
+              ? { ...product, product_quantity: product.product_quantity - 1 } // Decrease quantity by 1
+              : product
+          )
+        );
+  
+        // Show success notification
+        setSnackbarMessage('Product added to cart!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } else {
+        // Show error if no stock is available
+        setSnackbarMessage('Product out of stock!');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
     } catch (error) {
       console.error('Error adding product to cart:', error);
       setSnackbarMessage('Failed to add product to cart.');
@@ -162,6 +183,8 @@ const HomePage = () => {
       setSnackbarOpen(true);
     }
   };
+  
+  
 
   // Close Snackbar function
   const handleSnackbarClose = (event, reason) => {
